@@ -15,28 +15,28 @@ import { Linear, EaseInOut } from "./core";
  *   are used.
  */
 export function Clamp(g: Vector3[], options: Pick<TerrainOptions, 'maxHeight' | 'minHeight' | 'easing' | 'stretch'>) {
-    var min = Infinity,
-        max = -Infinity,
-        l = g.length,
-        i;
-    options.easing = options.easing || Linear;
-    for (i = 0; i < l; i++) {
-        if (g[i].z < min) min = g[i].z;
-        if (g[i].z > max) max = g[i].z;
-    }
-    var actualRange = max - min,
-        optMax = typeof options.maxHeight !== 'number' ? max : options.maxHeight,
-        optMin = typeof options.minHeight !== 'number' ? min : options.minHeight,
-        targetMax = options.stretch ? optMax : (max < optMax ? max : optMax),
-        targetMin = options.stretch ? optMin : (min > optMin ? min : optMin),
-        range = targetMax - targetMin;
-    if (targetMax < targetMin) {
-        targetMax = optMax;
-        range = targetMax - targetMin;
-    }
-    for (i = 0; i < l; i++) {
-        g[i].z = options.easing((g[i].z - min) / actualRange) * range + optMin;
-    }
+  let min = Infinity,
+    max = -Infinity,
+    l = g.length,
+    i;
+  options.easing = options.easing || Linear;
+  for (i = 0; i < l; i++) {
+    if (g[i].z < min) min = g[i].z;
+    if (g[i].z > max) max = g[i].z;
+  }
+  let actualRange = max - min,
+    optMax = typeof options.maxHeight !== 'number' ? max : options.maxHeight,
+    optMin = typeof options.minHeight !== 'number' ? min : options.minHeight,
+    targetMax = options.stretch ? optMax : (max < optMax ? max : optMax),
+    targetMin = options.stretch ? optMin : (min > optMin ? min : optMin),
+    range = targetMax - targetMin;
+  if (targetMax < targetMin) {
+    targetMax = optMax;
+    range = targetMax - targetMin;
+  }
+  for (i = 0; i < l; i++) {
+    g[i].z = options.easing((g[i].z - min) / actualRange) * range + optMin;
+  }
 };
 
 /**
@@ -71,49 +71,49 @@ export function Clamp(g: Vector3[], options: Pick<TerrainOptions, 'maxHeight' | 
  *   and `right` Boolean properties specifying which edges to affect.
  */
 export function Edges(g: Vector3[], options: TerrainOptions, direction: boolean, distance: number, easing: EasingFunction, edges: { top: boolean; bottom: boolean; left: boolean; right: boolean }) {
-    var numXSegments = Math.floor(distance / (options.xSize / options.xSegments)) || 1,
-        numYSegments = Math.floor(distance / (options.ySize / options.ySegments)) || 1,
-        peak = direction ? options.maxHeight : options.minHeight,
-        max = direction ? Math.max : Math.min,
-        xl = options.xSegments + 1,
-        yl = options.ySegments + 1,
-        i, j, multiplier, k1, k2;
-    easing = easing || EaseInOut;
-    if (typeof edges !== 'object') {
-        edges = { top: true, bottom: true, left: true, right: true };
+  let numXSegments = Math.floor(distance / (options.xSize / options.xSegments)) || 1,
+    numYSegments = Math.floor(distance / (options.ySize / options.ySegments)) || 1,
+    peak = direction ? options.maxHeight : options.minHeight,
+    max = direction ? Math.max : Math.min,
+    xl = options.xSegments + 1,
+    yl = options.ySegments + 1,
+    i, j, multiplier, k1, k2;
+  easing = easing || EaseInOut;
+  if (typeof edges !== 'object') {
+    edges = { top: true, bottom: true, left: true, right: true };
+  }
+  for (i = 0; i < xl; i++) {
+    for (j = 0; j < numYSegments; j++) {
+      multiplier = easing(1 - j / numYSegments);
+      k1 = j * xl + i;
+      k2 = (options.ySegments - j) * xl + i;
+      if (edges.top) {
+        g[k1].z = max(g[k1].z, (peak - g[k1].z) * multiplier + g[k1].z);
+      }
+      if (edges.bottom) {
+        g[k2].z = max(g[k2].z, (peak - g[k2].z) * multiplier + g[k2].z);
+      }
     }
-    for (i = 0; i < xl; i++) {
-        for (j = 0; j < numYSegments; j++) {
-            multiplier = easing(1 - j / numYSegments);
-            k1 = j * xl + i;
-            k2 = (options.ySegments - j) * xl + i;
-            if (edges.top) {
-                g[k1].z = max(g[k1].z, (peak - g[k1].z) * multiplier + g[k1].z);
-            }
-            if (edges.bottom) {
-                g[k2].z = max(g[k2].z, (peak - g[k2].z) * multiplier + g[k2].z);
-            }
-        }
+  }
+  for (i = 0; i < yl; i++) {
+    for (j = 0; j < numXSegments; j++) {
+      multiplier = easing(1 - j / numXSegments);
+      k1 = i * xl + j;
+      k2 = (options.ySegments - i) * xl + (options.xSegments - j);
+      if (edges.left) {
+        g[k1].z = max(g[k1].z, (peak - g[k1].z) * multiplier + g[k1].z);
+      }
+      if (edges.right) {
+        g[k2].z = max(g[k2].z, (peak - g[k2].z) * multiplier + g[k2].z);
+      }
     }
-    for (i = 0; i < yl; i++) {
-        for (j = 0; j < numXSegments; j++) {
-            multiplier = easing(1 - j / numXSegments);
-            k1 = i * xl + j;
-            k2 = (options.ySegments - i) * xl + (options.xSegments - j);
-            if (edges.left) {
-                g[k1].z = max(g[k1].z, (peak - g[k1].z) * multiplier + g[k1].z);
-            }
-            if (edges.right) {
-                g[k2].z = max(g[k2].z, (peak - g[k2].z) * multiplier + g[k2].z);
-            }
-        }
-    }
-    Clamp(g, {
-        maxHeight: options.maxHeight,
-        minHeight: options.minHeight,
-        stretch: true,
-        easing: Linear
-    });
+  }
+  Clamp(g, {
+    maxHeight: options.maxHeight,
+    minHeight: options.minHeight,
+    stretch: true,
+    easing: Linear
+  });
 };
 
 /**
@@ -143,29 +143,29 @@ export function Edges(g: Vector3[], options: TerrainOptions, direction: boolean,
  *   `THREE.Terrain.InEaseOut`, and any custom function that accepts a float
  *   between 0 and 1 and returns a float between 0 and 1.
  */
-export function RadialEdges(g: Vector3[], options: TerrainOptions, direction: boolean, distance: number, easing: EasingFunction, ) {
-    var peak = direction ? options.maxHeight : options.minHeight,
-        max = direction ? Math.max : Math.min,
-        xl = (options.xSegments + 1),
-        yl = (options.ySegments + 1),
-        xl2 = xl * 0.5,
-        yl2 = yl * 0.5,
-        xSegmentSize = options.xSize / options.xSegments,
-        ySegmentSize = options.ySize / options.ySegments,
-        edgeRadius = Math.min(options.xSize, options.ySize) * 0.5 - distance,
-        i, j, multiplier, k, vertexDistance;
-    for (i = 0; i < xl; i++) {
-        for (j = 0; j < yl2; j++) {
-            k = j * xl + i;
-            vertexDistance = Math.min(edgeRadius, Math.sqrt((xl2 - i) * xSegmentSize * (xl2 - i) * xSegmentSize + (yl2 - j) * ySegmentSize * (yl2 - j) * ySegmentSize) - distance);
-            if (vertexDistance < 0) continue;
-            multiplier = easing(vertexDistance / edgeRadius);
-            g[k].z = max(g[k].z, (peak - g[k].z) * multiplier + g[k].z);
-            // Use symmetry to reduce the number of iterations.
-            k = (options.ySegments - j) * xl + i;
-            g[k].z = max(g[k].z, (peak - g[k].z) * multiplier + g[k].z);
-        }
+export function RadialEdges(g: Vector3[], options: TerrainOptions, direction: boolean, distance: number, easing: EasingFunction,) {
+  let peak = direction ? options.maxHeight : options.minHeight,
+    max = direction ? Math.max : Math.min,
+    xl = (options.xSegments + 1),
+    yl = (options.ySegments + 1),
+    xl2 = xl * 0.5,
+    yl2 = yl * 0.5,
+    xSegmentSize = options.xSize / options.xSegments,
+    ySegmentSize = options.ySize / options.ySegments,
+    edgeRadius = Math.min(options.xSize, options.ySize) * 0.5 - distance,
+    i, j, multiplier, k, vertexDistance;
+  for (i = 0; i < xl; i++) {
+    for (j = 0; j < yl2; j++) {
+      k = j * xl + i;
+      vertexDistance = Math.min(edgeRadius, Math.sqrt((xl2 - i) * xSegmentSize * (xl2 - i) * xSegmentSize + (yl2 - j) * ySegmentSize * (yl2 - j) * ySegmentSize) - distance);
+      if (vertexDistance < 0) continue;
+      multiplier = easing(vertexDistance / edgeRadius);
+      g[k].z = max(g[k].z, (peak - g[k].z) * multiplier + g[k].z);
+      // Use symmetry to reduce the number of iterations.
+      k = (options.ySegments - j) * xl + i;
+      g[k].z = max(g[k].z, (peak - g[k].z) * multiplier + g[k].z);
     }
+  }
 };
 
 /**
@@ -183,27 +183,27 @@ export function RadialEdges(g: Vector3[], options: TerrainOptions, direction: bo
  *   neighbors.
  */
 export function Smooth(g: Vector3[], options: TerrainOptions, weight: number = 0) {
-    var heightmap = new Float64Array(g.length);
-    for (var i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
-        for (var j = 0; j < yl; j++) {
-            var sum = 0,
-                c = 0;
-            for (var n = -1; n <= 1; n++) {
-                for (var m = -1; m <= 1; m++) {
-                    var key = (j + n) * xl + i + m;
-                    if (typeof g[key] !== 'undefined' && i + m >= 0 && j + n >= 0 && i + m < xl && j + n < yl) {
-                        sum += g[key].z;
-                        c++;
-                    }
-                }
-            }
-            heightmap[j * xl + i] = sum / c;
+  let heightmap = new Float64Array(g.length);
+  for (let i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
+    for (let j = 0; j < yl; j++) {
+      let sum = 0,
+        c = 0;
+      for (let n = -1; n <= 1; n++) {
+        for (let m = -1; m <= 1; m++) {
+          let key = (j + n) * xl + i + m;
+          if (typeof g[key] !== 'undefined' && i + m >= 0 && j + n >= 0 && i + m < xl && j + n < yl) {
+            sum += g[key].z;
+            c++;
+          }
         }
+      }
+      heightmap[j * xl + i] = sum / c;
     }
-    var w = 1 / (1 + weight);
-    for (var k = 0, l = g.length; k < l; k++) {
-        g[k].z = (heightmap[k] + g[k].z * weight) * w;
-    }
+  }
+  let w = 1 / (1 + weight);
+  for (let k = 0, l = g.length; k < l; k++) {
+    g[k].z = (heightmap[k] + g[k].z * weight) * w;
+  }
 };
 
 /**
@@ -212,40 +212,40 @@ export function Smooth(g: Vector3[], options: TerrainOptions, weight: number = 0
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function SmoothMedian(g: Vector3[], options: TerrainOptions) {
-    var heightmap = new Float64Array(g.length),
-        neighborValues: number[] = [],
-        neighborKeys = [],
-        sortByValue = function (a: number, b: number) {
-            return neighborValues[a] - neighborValues[b];
-        };
-    for (var i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
-        for (var j = 0; j < yl; j++) {
-            neighborValues.length = 0;
-            neighborKeys.length = 0;
-            for (var n = -1; n <= 1; n++) {
-                for (var m = -1; m <= 1; m++) {
-                    var key = (j + n) * xl + i + m;
-                    if (typeof g[key] !== 'undefined' && i + m >= 0 && j + n >= 0 && i + m < xl && j + n < yl) {
-                        neighborValues.push(g[key].z);
-                        neighborKeys.push(key);
-                    }
-                }
-            }
-            neighborKeys.sort(sortByValue);
-            var halfKey = Math.floor(neighborKeys.length * 0.5),
-                median;
-            if (neighborKeys.length % 2 === 1) {
-                median = g[neighborKeys[halfKey]].z;
-            }
-            else {
-                median = (g[neighborKeys[halfKey - 1]].z + g[neighborKeys[halfKey]].z) * 0.5;
-            }
-            heightmap[j * xl + i] = median;
+  let heightmap = new Float64Array(g.length),
+    neighborValues: number[] = [],
+    neighborKeys = [],
+    sortByValue = function (a: number, b: number) {
+      return neighborValues[a] - neighborValues[b];
+    };
+  for (let i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
+    for (let j = 0; j < yl; j++) {
+      neighborValues.length = 0;
+      neighborKeys.length = 0;
+      for (let n = -1; n <= 1; n++) {
+        for (let m = -1; m <= 1; m++) {
+          let key = (j + n) * xl + i + m;
+          if (typeof g[key] !== 'undefined' && i + m >= 0 && j + n >= 0 && i + m < xl && j + n < yl) {
+            neighborValues.push(g[key].z);
+            neighborKeys.push(key);
+          }
         }
+      }
+      neighborKeys.sort(sortByValue);
+      let halfKey = Math.floor(neighborKeys.length * 0.5),
+        median;
+      if (neighborKeys.length % 2 === 1) {
+        median = g[neighborKeys[halfKey]].z;
+      }
+      else {
+        median = (g[neighborKeys[halfKey - 1]].z + g[neighborKeys[halfKey]].z) * 0.5;
+      }
+      heightmap[j * xl + i] = median;
     }
-    for (var k = 0, l = g.length; k < l; k++) {
-        g[k].z = heightmap[k];
-    }
+  }
+  for (let k = 0, l = g.length; k < l; k++) {
+    g[k].z = heightmap[k];
+  }
 };
 
 /**
@@ -265,33 +265,33 @@ export function SmoothMedian(g: Vector3[], options: TerrainOptions) {
  *   point can be farther outside the range of its neighbors.
  */
 export function SmoothConservative(g: Vector3[], options: TerrainOptions, multiplier: number) {
-    var heightmap = new Float64Array(g.length);
-    for (var i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
-        for (var j = 0; j < yl; j++) {
-            var max = -Infinity,
-                min = Infinity;
-            for (var n = -1; n <= 1; n++) {
-                for (var m = -1; m <= 1; m++) {
-                    var key = (j + n) * xl + i + m;
-                    if (typeof g[key] !== 'undefined' && n && m && i + m >= 0 && j + n >= 0 && i + m < xl && j + n < yl) {
-                        if (g[key].z < min) min = g[key].z;
-                        if (g[key].z > max) max = g[key].z;
-                    }
-                }
-            }
-            var kk = j * xl + i;
-            if (typeof multiplier === 'number') {
-                var halfdiff = (max - min) * 0.5,
-                    middle = min + halfdiff;
-                max = middle + halfdiff * multiplier;
-                min = middle - halfdiff * multiplier;
-            }
-            heightmap[kk] = g[kk].z > max ? max : (g[kk].z < min ? min : g[kk].z);
+  let heightmap = new Float64Array(g.length);
+  for (let i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
+    for (let j = 0; j < yl; j++) {
+      let max = -Infinity,
+        min = Infinity;
+      for (let n = -1; n <= 1; n++) {
+        for (let m = -1; m <= 1; m++) {
+          let key = (j + n) * xl + i + m;
+          if (typeof g[key] !== 'undefined' && n && m && i + m >= 0 && j + n >= 0 && i + m < xl && j + n < yl) {
+            if (g[key].z < min) min = g[key].z;
+            if (g[key].z > max) max = g[key].z;
+          }
         }
+      }
+      let kk = j * xl + i;
+      if (typeof multiplier === 'number') {
+        let halfdiff = (max - min) * 0.5,
+          middle = min + halfdiff;
+        max = middle + halfdiff * multiplier;
+        min = middle - halfdiff * multiplier;
+      }
+      heightmap[kk] = g[kk].z > max ? max : (g[kk].z < min ? min : g[kk].z);
     }
-    for (var k = 0, l = g.length; k < l; k++) {
-        g[k].z = heightmap[k];
-    }
+  }
+  for (let k = 0, l = g.length; k < l; k++) {
+    g[k].z = heightmap[k];
+  }
 };
 
 /**
@@ -305,45 +305,45 @@ export function SmoothConservative(g: Vector3[], options: TerrainOptions, multip
  *   (g.length/2)^(1/4).
  */
 export function Step(g: Vector3[], levels?: number) {
-    // Calculate the max, min, and avg values for each bucket
-    const l = g.length;
-    if (typeof levels === 'undefined') {
-        levels = Math.floor(Math.pow(l * 0.5, 0.25));
+  // Calculate the max, min, and avg values for each bucket
+  const l = g.length;
+  if (typeof levels === 'undefined') {
+    levels = Math.floor(Math.pow(l * 0.5, 0.25));
+  }
+  let i = 0,
+    j = 0,
+    inc = Math.floor(l / levels),
+    heights = new Array(l),
+    buckets = new Array(levels);
+  for (i = 0; i < l; i++) {
+    heights[i] = g[i].z;
+  }
+  heights.sort(function (a, b) { return a - b; });
+  for (i = 0; i < levels; i++) {
+    // Bucket by population (bucket size) not range size
+    let subset = heights.slice(i * inc, (i + 1) * inc),
+      sum = 0,
+      bl = subset.length;
+    for (j = 0; j < bl; j++) {
+      sum += subset[j];
     }
-    var i = 0,
-        j = 0,
-        inc = Math.floor(l / levels),
-        heights = new Array(l),
-        buckets = new Array(levels);
-    for (i = 0; i < l; i++) {
-        heights[i] = g[i].z;
-    }
-    heights.sort(function (a, b) { return a - b; });
-    for (i = 0; i < levels; i++) {
-        // Bucket by population (bucket size) not range size
-        var subset = heights.slice(i * inc, (i + 1) * inc),
-            sum = 0,
-            bl = subset.length;
-        for (j = 0; j < bl; j++) {
-            sum += subset[j];
-        }
-        buckets[i] = {
-            min: subset[0],
-            max: subset[subset.length - 1],
-            avg: sum / bl,
-        };
-    }
+    buckets[i] = {
+      min: subset[0],
+      max: subset[subset.length - 1],
+      avg: sum / bl,
+    };
+  }
 
-    // Set the height of each vertex to the average height of its bucket
-    for (i = 0; i < l; i++) {
-        var startHeight = g[i].z;
-        for (j = 0; j < levels; j++) {
-            if (startHeight >= buckets[j].min && startHeight <= buckets[j].max) {
-                g[i].z = buckets[j].avg;
-                break;
-            }
-        }
+  // Set the height of each vertex to the average height of its bucket
+  for (i = 0; i < l; i++) {
+    let startHeight = g[i].z;
+    for (j = 0; j < levels; j++) {
+      if (startHeight >= buckets[j].min && startHeight <= buckets[j].max) {
+        g[i].z = buckets[j].avg;
+        break;
+      }
     }
+  }
 };
 
 /**
@@ -352,8 +352,8 @@ export function Step(g: Vector3[], levels?: number) {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function Turbulence(g: Vector3[], options: TerrainOptions) {
-    var range = options.maxHeight - options.minHeight;
-    for (var i = 0, l = g.length; i < l; i++) {
-        g[i].z = options.minHeight + Math.abs((g[i].z - options.minHeight) * 2 - range);
-    }
+  let range = options.maxHeight - options.minHeight;
+  for (let i = 0, l = g.length; i < l; i++) {
+    g[i].z = options.minHeight + Math.abs((g[i].z - options.minHeight) * 2 - range);
+  }
 };

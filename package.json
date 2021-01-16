@@ -1,56 +1,40 @@
 {
-    "name": "three.terrain.js",
-    "version": "1.6.0",
-    "description": "Extends the Three.js web-based 3D graphics framework to support generating random terrains and rendering terrain from predetermined heightmaps.",
-    "homepage": "https://github.com/IceCreamYou/THREE.Terrain",
-    "bugs": "https://github.com/IceCreamYou/THREE.Terrain/issues",
-    "browser": "dist/THREE.Terrain.umd.js",
-    "main": "dist/THREE.Terrain.cjs.js",
-    "module": "dist/THREE.Terrain.esm.js",
-    "types": "dist/main.d.ts",
-    "directories": {
-        "lib": "build",
-        "example": "demo"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/IceCreamYou/THREE.Terrain.git"
-    },
-    "keywords": [
-        "THREE",
-        "three.js",
-        "terrain",
-        "land",
-        "DiamondSquare",
-        "random",
-        "generator"
-    ],
-    "author": "Isaac Sukin (http://www.isaacsukin.com/)",
-    "license": "MIT",
-    "readmeFilename": "README.md",
-    "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "^1.11.0",
-        "@typescript-eslint/parser": "^1.11.0",
-        "eslint": "^5.16.0",
-        "rimraf": "^3.0.0",
-        "rollup": "^1.16.6",
-        "rollup-plugin-sourcemaps": "^0.4.2",
-        "rollup-plugin-terser": "^5.1.1",
-        "rollup-plugin-typescript": "^1.0.1",
-        "serve": "^11.0.2",
-        "tslib": "^1.10.0",
-        "typescript": "^3.5.2"
-    },
-    "scripts": {
-        "ts:defs": "tsc --declaration --outDir ./dist --emitDeclarationOnly",
-        "build": "rimraf dist && npm run ts:defs && rollup -c",
-        "lint": "eslint src/*.ts",
-        "serve": "serve -l 8080"
-    },
-    "dependencies": {
-        "three": "^0.105.2"
-    },
-    "files": [
-        "dist"
-    ]
+  "name": "@repcomm/three.terrain",
+  "version": "1.6.0",
+  "description": "Fork of mattes3/THREE.Terrain for use with npm / webpack",
+  "homepage": "https://github.com/IceCreamYou/THREE.Terrain",
+  "bugs": "https://github.com/IceCreamYou/THREE.Terrain/issues",
+  "main": "./lib/mod.js",
+  "types": "./lib/mod.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/RepComm/THREE.Terrain.git"
+  },
+  "keywords": [
+    "THREE",
+    "three.js",
+    "terrain",
+    "land",
+    "DiamondSquare",
+    "random",
+    "generator"
+  ],
+  "author": "Isaac Sukin (http://www.isaacsukin.com/)",
+  "license": "MIT",
+  "readmeFilename": "ReadMe.md",
+  "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.10.5",
+    "@babel/plugin-transform-typescript": "^7.10.5",
+    "@babel/preset-env": "^7.10.4"
+  },
+  "scripts": {
+    "build": "babel src --extensions '.ts' --copy-files -d lib"
+  },
+  "dependencies": {
+    "three": "^0.124.0"
+  }
 }

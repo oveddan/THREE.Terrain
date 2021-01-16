@@ -7,9 +7,9 @@ import { Influence, Influences } from './influences';
 import { perlin, seed, simplex } from './noise';
 
 interface Pass {
-    method: HeightmapFunction;
-    amplitude?: number;
-    frequency?: number;
+  method: HeightmapFunction;
+  amplitude?: number;
+  frequency?: number;
 }
 
 /**
@@ -36,16 +36,16 @@ interface Pass {
  *     different frequencies and amplitudes results in nice detail.
  */
 export function MultiPass(g: Vector3[], options: TerrainOptions, passes: Pass[]) {
-    var clonedOptions = { ...options };
-    var range = options.maxHeight - options.minHeight;
-    for (var i = 0, l = passes.length; i < l; i++) {
-        var amp = typeof passes[i].amplitude === 'undefined' ? 1 : passes[i].amplitude;
-        var move = 0.5 * (range - range * amp!);
-        clonedOptions.maxHeight = options.maxHeight - move;
-        clonedOptions.minHeight = options.minHeight + move;
-        clonedOptions.frequency = (typeof passes[i].frequency === 'undefined' ? options.frequency : passes[i].frequency)!;
-        passes[i].method(g, clonedOptions);
-    }
+  let clonedOptions = { ...options };
+  let range = options.maxHeight - options.minHeight;
+  for (let i = 0, l = passes.length; i < l; i++) {
+    let amp = typeof passes[i].amplitude === 'undefined' ? 1 : passes[i].amplitude;
+    let move = 0.5 * (range - range * amp!);
+    clonedOptions.maxHeight = options.maxHeight - move;
+    clonedOptions.minHeight = options.minHeight + move;
+    clonedOptions.frequency = (typeof passes[i].frequency === 'undefined' ? options.frequency : passes[i].frequency)!;
+    passes[i].method(g, clonedOptions);
+  }
 };
 
 /**
@@ -67,13 +67,13 @@ export function MultiPass(g: Vector3[], options: TerrainOptions, passes: Pass[])
  *   the terrain in the relevant direction they are).
  */
 export function Curve(g: Vector3[], options: TerrainOptions, curve: (x: number, y: number) => number) {
-    var range = (options.maxHeight - options.minHeight) * 0.5,
-        scalar = options.frequency / (Math.min(options.xSegments, options.ySegments) + 1);
-    for (var i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
-        for (var j = 0; j < yl; j++) {
-            g[j * xl + i].z += curve(i * scalar, j * scalar) * range;
-        }
+  let range = (options.maxHeight - options.minHeight) * 0.5,
+    scalar = options.frequency / (Math.min(options.xSegments, options.ySegments) + 1);
+  for (let i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
+    for (let j = 0; j < yl; j++) {
+      g[j * xl + i].z += curve(i * scalar, j * scalar) * range;
     }
+  }
 };
 
 /**
@@ -82,14 +82,14 @@ export function Curve(g: Vector3[], options: TerrainOptions, curve: (x: number, 
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function Cosine(g: Vector3[], options: TerrainOptions) {
-    var amplitude = (options.maxHeight - options.minHeight) * 0.5,
-        frequencyScalar = options.frequency * Math.PI / (Math.min(options.xSegments, options.ySegments) + 1),
-        phase = Math.random() * Math.PI * 2;
-    for (var i = 0, xl = options.xSegments + 1; i < xl; i++) {
-        for (var j = 0, yl = options.ySegments + 1; j < yl; j++) {
-            g[j * xl + i].z += amplitude * (Math.cos(i * frequencyScalar + phase) + Math.cos(j * frequencyScalar + phase));
-        }
+  let amplitude = (options.maxHeight - options.minHeight) * 0.5,
+    frequencyScalar = options.frequency * Math.PI / (Math.min(options.xSegments, options.ySegments) + 1),
+    phase = Math.random() * Math.PI * 2;
+  for (let i = 0, xl = options.xSegments + 1; i < xl; i++) {
+    for (let j = 0, yl = options.ySegments + 1; j < yl; j++) {
+      g[j * xl + i].z += amplitude * (Math.cos(i * frequencyScalar + phase) + Math.cos(j * frequencyScalar + phase));
     }
+  }
 };
 
 /**
@@ -98,12 +98,12 @@ export function Cosine(g: Vector3[], options: TerrainOptions) {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function CosineLayers(g: Vector3[], options: TerrainOptions) {
-    MultiPass(g, options, [
-        { method: Cosine, amplitude: 1, frequency: 2.5 },
-        { method: Cosine, amplitude: 0.1, frequency: 12 },
-        { method: Cosine, amplitude: 0.05, frequency: 15 },
-        { method: Cosine, amplitude: 0.025, frequency: 20 },
-    ]);
+  MultiPass(g, options, [
+    { method: Cosine, amplitude: 1, frequency: 2.5 },
+    { method: Cosine, amplitude: 0.1, frequency: 12 },
+    { method: Cosine, amplitude: 0.05, frequency: 15 },
+    { method: Cosine, amplitude: 0.025, frequency: 20 },
+  ]);
 };
 
 /**
@@ -120,73 +120,73 @@ export function CosineLayers(g: Vector3[], options: TerrainOptions) {
  *   of {@link THREE.Terrain}().
  */
 export function DiamondSquare(g: Vector3[], options: TerrainOptions): void {
-    function ceilPowerOfTwo(value: number): number {
-        return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+  function ceilPowerOfTwo(value: number): number {
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+  }
+
+  // Set the segment length to the smallest power of 2 that is greater than
+  // the number of vertices in either dimension of the plane
+  let segments = ceilPowerOfTwo(Math.max(options.xSegments, options.ySegments) + 1);
+
+  // Initialize heightmap
+  let size = segments + 1,
+    heightmap = [],
+    smoothing = (options.maxHeight - options.minHeight),
+    i,
+    j,
+    xl = options.xSegments + 1,
+    yl = options.ySegments + 1;
+  for (i = 0; i <= segments; i++) {
+    heightmap[i] = new Float64Array(segments + 1);
+  }
+
+  // Generate heightmap
+  for (let l = segments; l >= 2; l /= 2) {
+    let half = Math.round(l * 0.5),
+      whole = Math.round(l),
+      x,
+      y,
+      avg,
+      d;
+    smoothing /= 2;
+    // square
+    for (x = 0; x < segments; x += whole) {
+      for (y = 0; y < segments; y += whole) {
+        d = Math.random() * smoothing * 2 - smoothing;
+        avg = heightmap[x][y] +            // top left
+          heightmap[x + whole][y] +      // top right
+          heightmap[x][y + whole] +      // bottom left
+          heightmap[x + whole][y + whole]; // bottom right
+        avg *= 0.25;
+        heightmap[x + half][y + half] = avg + d;
+      }
     }
-
-    // Set the segment length to the smallest power of 2 that is greater than
-    // the number of vertices in either dimension of the plane
-    var segments = ceilPowerOfTwo(Math.max(options.xSegments, options.ySegments) + 1);
-
-    // Initialize heightmap
-    var size = segments + 1,
-        heightmap = [],
-        smoothing = (options.maxHeight - options.minHeight),
-        i,
-        j,
-        xl = options.xSegments + 1,
-        yl = options.ySegments + 1;
-    for (i = 0; i <= segments; i++) {
-        heightmap[i] = new Float64Array(segments + 1);
+    // diamond
+    for (x = 0; x < segments; x += half) {
+      for (y = (x + half) % l; y < segments; y += l) {
+        d = Math.random() * smoothing * 2 - smoothing;
+        avg = heightmap[(x - half + size) % size][y] + // middle left
+          heightmap[(x + half) % size][y] +      // middle right
+          heightmap[x][(y + half) % size] +      // middle top
+          heightmap[x][(y - half + size) % size];  // middle bottom
+        avg *= 0.25;
+        avg += d;
+        heightmap[x][y] = avg;
+        // top and right edges
+        if (x === 0) heightmap[segments][y] = avg;
+        if (y === 0) heightmap[x][segments] = avg;
+      }
     }
+  }
 
-    // Generate heightmap
-    for (var l = segments; l >= 2; l /= 2) {
-        var half = Math.round(l * 0.5),
-            whole = Math.round(l),
-            x,
-            y,
-            avg,
-            d;
-        smoothing /= 2;
-        // square
-        for (x = 0; x < segments; x += whole) {
-            for (y = 0; y < segments; y += whole) {
-                d = Math.random() * smoothing * 2 - smoothing;
-                avg = heightmap[x][y] +            // top left
-                    heightmap[x + whole][y] +      // top right
-                    heightmap[x][y + whole] +      // bottom left
-                    heightmap[x + whole][y + whole]; // bottom right
-                avg *= 0.25;
-                heightmap[x + half][y + half] = avg + d;
-            }
-        }
-        // diamond
-        for (x = 0; x < segments; x += half) {
-            for (y = (x + half) % l; y < segments; y += l) {
-                d = Math.random() * smoothing * 2 - smoothing;
-                avg = heightmap[(x - half + size) % size][y] + // middle left
-                    heightmap[(x + half) % size][y] +      // middle right
-                    heightmap[x][(y + half) % size] +      // middle top
-                    heightmap[x][(y - half + size) % size];  // middle bottom
-                avg *= 0.25;
-                avg += d;
-                heightmap[x][y] = avg;
-                // top and right edges
-                if (x === 0) heightmap[segments][y] = avg;
-                if (y === 0) heightmap[x][segments] = avg;
-            }
-        }
+  // Apply heightmap
+  for (i = 0; i < xl; i++) {
+    for (j = 0; j < yl; j++) {
+      g[j * xl + i].z += heightmap[i][j];
     }
+  }
 
-    // Apply heightmap
-    for (i = 0; i < xl; i++) {
-        for (j = 0; j < yl; j++) {
-            g[j * xl + i].z += heightmap[i][j];
-        }
-    }
-
-    // THREE.Terrain.SmoothConservative(g, options);
+  // THREE.Terrain.SmoothConservative(g, options);
 };
 
 /**
@@ -199,32 +199,32 @@ export function DiamondSquare(g: Vector3[], options: TerrainOptions): void {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function Fault(g: Vector3[], options: TerrainOptions) {
-    var d = Math.sqrt(options.xSegments * options.xSegments + options.ySegments * options.ySegments),
-        iterations = d * options.frequency,
-        range = (options.maxHeight - options.minHeight) * 0.5,
-        displacement = range / iterations,
-        smoothDistance = Math.min(options.xSize / options.xSegments, options.ySize / options.ySegments) * options.frequency;
-    for (var k = 0; k < iterations; k++) {
-        var v = Math.random(),
-            a = Math.sin(v * Math.PI * 2),
-            b = Math.cos(v * Math.PI * 2),
-            c = Math.random() * d - d * 0.5;
-        for (var i = 0, xl = options.xSegments + 1; i < xl; i++) {
-            for (var j = 0, yl = options.ySegments + 1; j < yl; j++) {
-                var distance = a * i + b * j - c;
-                if (distance > smoothDistance) {
-                    g[j * xl + i].z += displacement;
-                }
-                else if (distance < -smoothDistance) {
-                    g[j * xl + i].z -= displacement;
-                }
-                else {
-                    g[j * xl + i].z += Math.cos(distance / smoothDistance * Math.PI * 2) * displacement;
-                }
-            }
+  let d = Math.sqrt(options.xSegments * options.xSegments + options.ySegments * options.ySegments),
+    iterations = d * options.frequency,
+    range = (options.maxHeight - options.minHeight) * 0.5,
+    displacement = range / iterations,
+    smoothDistance = Math.min(options.xSize / options.xSegments, options.ySize / options.ySegments) * options.frequency;
+  for (let k = 0; k < iterations; k++) {
+    let v = Math.random(),
+      a = Math.sin(v * Math.PI * 2),
+      b = Math.cos(v * Math.PI * 2),
+      c = Math.random() * d - d * 0.5;
+    for (let i = 0, xl = options.xSegments + 1; i < xl; i++) {
+      for (let j = 0, yl = options.ySegments + 1; j < yl; j++) {
+        let distance = a * i + b * j - c;
+        if (distance > smoothDistance) {
+          g[j * xl + i].z += displacement;
         }
+        else if (distance < -smoothDistance) {
+          g[j * xl + i].z -= displacement;
+        }
+        else {
+          g[j * xl + i].z += Math.cos(distance / smoothDistance * Math.PI * 2) * displacement;
+        }
+      }
     }
-    // Smooth(g, options);
+  }
+  // Smooth(g, options);
 };
 
 /**
@@ -261,32 +261,32 @@ export function Fault(g: Vector3[], options: TerrainOptions) {
 type ShapeFunction = ({ x, y }: { x: number; y: number }) => void;
 
 export function Hill(g: Vector3[], options: TerrainOptions, feature: FeatureFunction, shape?: ShapeFunction) {
-    var frequency = options.frequency * 2,
-        numFeatures = frequency * frequency * 10,
-        heightRange = options.maxHeight - options.minHeight,
-        minHeight = heightRange / (frequency * frequency),
-        maxHeight = heightRange / frequency,
-        smallerSideLength = Math.min(options.xSize, options.ySize),
-        minRadius = smallerSideLength / (frequency * frequency),
-        maxRadius = smallerSideLength / frequency;
-    feature = feature || Influences.Hill;
+  let frequency = options.frequency * 2,
+    numFeatures = frequency * frequency * 10,
+    heightRange = options.maxHeight - options.minHeight,
+    minHeight = heightRange / (frequency * frequency),
+    maxHeight = heightRange / frequency,
+    smallerSideLength = Math.min(options.xSize, options.ySize),
+    minRadius = smallerSideLength / (frequency * frequency),
+    maxRadius = smallerSideLength / frequency;
+  feature = feature || Influences.Hill;
 
-    var coords = { x: 0, y: 0 };
-    for (var i = 0; i < numFeatures; i++) {
-        var radius = Math.random() * (maxRadius - minRadius) + minRadius,
-            height = Math.random() * (maxHeight - minHeight) + minHeight;
-        coords.x = Math.random();
-        coords.y = Math.random();
-        if (typeof shape === 'function') shape(coords);
-        Influence(
-            g, options,
-            feature,
-            coords.x, coords.y,
-            radius, height,
-            AdditiveBlending,
-            EaseInStrong
-        );
-    }
+  let coords = { x: 0, y: 0 };
+  for (let i = 0; i < numFeatures; i++) {
+    let radius = Math.random() * (maxRadius - minRadius) + minRadius,
+      height = Math.random() * (maxHeight - minHeight) + minHeight;
+    coords.x = Math.random();
+    coords.y = Math.random();
+    if (typeof shape === 'function') shape(coords);
+    Influence(
+      g, options,
+      feature,
+      coords.x, coords.y,
+      radius, height,
+      AdditiveBlending,
+      EaseInStrong
+    );
+  }
 };
 
 /**
@@ -314,49 +314,49 @@ export function Hill(g: Vector3[], options: TerrainOptions, feature: FeatureFunc
  *   purpose.
  */
 export function HillIsland() {
-    function island(coords: { x: number; y: number }) {
-        var theta = Math.random() * Math.PI * 2;
-        coords.x = 0.5 + Math.cos(theta) * coords.x * 0.4;
-        coords.y = 0.5 + Math.sin(theta) * coords.y * 0.4;
-    };
-    return function (g: Vector3[], options: TerrainOptions, feature: FeatureFunction) {
-        Hill(g, options, feature, island);
-    };
+  function island(coords: { x: number; y: number }) {
+    let theta = Math.random() * Math.PI * 2;
+    coords.x = 0.5 + Math.cos(theta) * coords.x * 0.4;
+    coords.y = 0.5 + Math.sin(theta) * coords.y * 0.4;
+  };
+  return function (g: Vector3[], options: TerrainOptions, feature: FeatureFunction) {
+    Hill(g, options, feature, island);
+  };
 }
 
 /**
  * Deposit a particle at a vertex.
  */
 function deposit(g: Vector3[], i: number, j: number, xl: number, displacement: number) {
-    var currentKey = j * xl + i;
-    // Pick a random neighbor.
-    for (var k = 0; k < 3; k++) {
-        var r = Math.floor(Math.random() * 8);
-        switch (r) {
-            case 0: i++; break;
-            case 1: i--; break;
-            case 2: j++; break;
-            case 3: j--; break;
-            case 4: i++; j++; break;
-            case 5: i++; j--; break;
-            case 6: i--; j++; break;
-            case 7: i--; j--; break;
-        }
-        var neighborKey = j * xl + i;
-        // If the neighbor is lower, move the particle to that neighbor and re-evaluate.
-        if (typeof g[neighborKey] !== 'undefined') {
-            if (g[neighborKey].z < g[currentKey].z) {
-                deposit(g, i, j, xl, displacement);
-                return;
-            }
-        }
-        // Deposit some particles on the edge.
-        else if (Math.random() < 0.2) {
-            g[currentKey].z += displacement;
-            return;
-        }
+  let currentKey = j * xl + i;
+  // Pick a random neighbor.
+  for (let k = 0; k < 3; k++) {
+    let r = Math.floor(Math.random() * 8);
+    switch (r) {
+      case 0: i++; break;
+      case 1: i--; break;
+      case 2: j++; break;
+      case 3: j--; break;
+      case 4: i++; j++; break;
+      case 5: i++; j--; break;
+      case 6: i--; j++; break;
+      case 7: i--; j--; break;
     }
-    g[currentKey].z += displacement;
+    let neighborKey = j * xl + i;
+    // If the neighbor is lower, move the particle to that neighbor and re-evaluate.
+    if (typeof g[neighborKey] !== 'undefined') {
+      if (g[neighborKey].z < g[currentKey].z) {
+        deposit(g, i, j, xl, displacement);
+        return;
+      }
+    }
+    // Deposit some particles on the edge.
+    else if (Math.random() < 0.2) {
+      g[currentKey].z += displacement;
+      return;
+    }
+  }
+  g[currentKey].z += displacement;
 }
 
 /**
@@ -375,26 +375,26 @@ function deposit(g: Vector3[], i: number, j: number, xl: number, displacement: n
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function Particles(g: Vector3[], options: TerrainOptions) {
-    var iterations = Math.sqrt(options.xSegments * options.xSegments + options.ySegments * options.ySegments) * options.frequency * 300,
-        xl = options.xSegments + 1,
-        displacement = (options.maxHeight - options.minHeight) / iterations * 1000,
-        i = Math.floor(Math.random() * options.xSegments),
-        j = Math.floor(Math.random() * options.ySegments),
-        xDeviation = Math.random() * 0.2 - 0.1,
-        yDeviation = Math.random() * 0.2 - 0.1;
-    for (var k = 0; k < iterations; k++) {
-        deposit(g, i, j, xl, displacement);
-        var d = Math.random() * Math.PI * 2;
-        if (k % 1000 === 0) {
-            xDeviation = Math.random() * 0.2 - 0.1;
-            yDeviation = Math.random() * 0.2 - 0.1;
-        }
-        if (k % 100 === 0) {
-            i = Math.floor(options.xSegments * (0.5 + xDeviation) + Math.cos(d) * Math.random() * options.xSegments * (0.5 - Math.abs(xDeviation)));
-            j = Math.floor(options.ySegments * (0.5 + yDeviation) + Math.sin(d) * Math.random() * options.ySegments * (0.5 - Math.abs(yDeviation)));
-        }
+  let iterations = Math.sqrt(options.xSegments * options.xSegments + options.ySegments * options.ySegments) * options.frequency * 300,
+    xl = options.xSegments + 1,
+    displacement = (options.maxHeight - options.minHeight) / iterations * 1000,
+    i = Math.floor(Math.random() * options.xSegments),
+    j = Math.floor(Math.random() * options.ySegments),
+    xDeviation = Math.random() * 0.2 - 0.1,
+    yDeviation = Math.random() * 0.2 - 0.1;
+  for (let k = 0; k < iterations; k++) {
+    deposit(g, i, j, xl, displacement);
+    let d = Math.random() * Math.PI * 2;
+    if (k % 1000 === 0) {
+      xDeviation = Math.random() * 0.2 - 0.1;
+      yDeviation = Math.random() * 0.2 - 0.1;
     }
-    // THREE.Terrain.Smooth(g, options, 3);
+    if (k % 100 === 0) {
+      i = Math.floor(options.xSegments * (0.5 + xDeviation) + Math.cos(d) * Math.random() * options.xSegments * (0.5 - Math.abs(xDeviation)));
+      j = Math.floor(options.ySegments * (0.5 + yDeviation) + Math.sin(d) * Math.random() * options.ySegments * (0.5 - Math.abs(yDeviation)));
+    }
+  }
+  // THREE.Terrain.Smooth(g, options, 3);
 }
 
 /**
@@ -403,14 +403,14 @@ export function Particles(g: Vector3[], options: TerrainOptions) {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function Perlin(g: Vector3[], options: TerrainOptions) {
-    seed(Math.random());
-    var range = (options.maxHeight - options.minHeight) * 0.5,
-        divisor = (Math.min(options.xSegments, options.ySegments) + 1) / options.frequency;
-    for (var i = 0, xl = options.xSegments + 1; i < xl; i++) {
-        for (var j = 0, yl = options.ySegments + 1; j < yl; j++) {
-            g[j * xl + i].z += perlin(i / divisor, j / divisor) * range;
-        }
+  seed(Math.random());
+  let range = (options.maxHeight - options.minHeight) * 0.5,
+    divisor = (Math.min(options.xSegments, options.ySegments) + 1) / options.frequency;
+  for (let i = 0, xl = options.xSegments + 1; i < xl; i++) {
+    for (let j = 0, yl = options.ySegments + 1; j < yl; j++) {
+      g[j * xl + i].z += perlin(i / divisor, j / divisor) * range;
     }
+  }
 };
 
 /**
@@ -419,11 +419,11 @@ export function Perlin(g: Vector3[], options: TerrainOptions) {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function PerlinDiamond(g: Vector3[], options: TerrainOptions) {
-    MultiPass(g, options, [
-        { method: Perlin },
-        { method: DiamondSquare, amplitude: 0.75 },
-        { method: function (g: Vector3[], o: TerrainOptions) { return SmoothMedian(g, o); } },
-    ]);
+  MultiPass(g, options, [
+    { method: Perlin },
+    { method: DiamondSquare, amplitude: 0.75 },
+    { method: function (g: Vector3[], o: TerrainOptions) { return SmoothMedian(g, o); } },
+  ]);
 };
 
 /**
@@ -432,12 +432,12 @@ export function PerlinDiamond(g: Vector3[], options: TerrainOptions) {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function PerlinLayers(g: Vector3[], options: TerrainOptions) {
-    MultiPass(g, options, [
-        { method: Perlin, frequency: 1.25 },
-        { method: Perlin, amplitude: 0.05, frequency: 2.5 },
-        { method: Perlin, amplitude: 0.35, frequency: 5 },
-        { method: Perlin, amplitude: 0.15, frequency: 10 },
-    ]);
+  MultiPass(g, options, [
+    { method: Perlin, frequency: 1.25 },
+    { method: Perlin, amplitude: 0.05, frequency: 2.5 },
+    { method: Perlin, amplitude: 0.35, frequency: 5 },
+    { method: Perlin, amplitude: 0.15, frequency: 10 },
+  ]);
 };
 
 /**
@@ -449,14 +449,14 @@ export function PerlinLayers(g: Vector3[], options: TerrainOptions) {
  * for an interesting comparison where the generation happens in GLSL.
  */
 export function Simplex(g: Vector3[], options: TerrainOptions) {
-    seed(Math.random());
-    var range = (options.maxHeight - options.minHeight) * 0.5,
-        divisor = (Math.min(options.xSegments, options.ySegments) + 1) * 2 / options.frequency;
-    for (var i = 0, xl = options.xSegments + 1; i < xl; i++) {
-        for (var j = 0, yl = options.ySegments + 1; j < yl; j++) {
-            g[j * xl + i].z += simplex(i / divisor, j / divisor) * range;
-        }
+  seed(Math.random());
+  let range = (options.maxHeight - options.minHeight) * 0.5,
+    divisor = (Math.min(options.xSegments, options.ySegments) + 1) * 2 / options.frequency;
+  for (let i = 0, xl = options.xSegments + 1; i < xl; i++) {
+    for (let j = 0, yl = options.ySegments + 1; j < yl; j++) {
+      g[j * xl + i].z += simplex(i / divisor, j / divisor) * range;
     }
+  }
 };
 
 /**
@@ -465,13 +465,13 @@ export function Simplex(g: Vector3[], options: TerrainOptions) {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function SimplexLayers(g: Vector3[], options: TerrainOptions) {
-    MultiPass(g, options, [
-        { method: Simplex, frequency: 1.25 },
-        { method: Simplex, amplitude: 0.5, frequency: 2.5 },
-        { method: Simplex, amplitude: 0.25, frequency: 5 },
-        { method: Simplex, amplitude: 0.125, frequency: 10 },
-        { method: Simplex, amplitude: 0.0625, frequency: 20 },
-    ]);
+  MultiPass(g, options, [
+    { method: Simplex, frequency: 1.25 },
+    { method: Simplex, amplitude: 0.5, frequency: 2.5 },
+    { method: Simplex, amplitude: 0.25, frequency: 5 },
+    { method: Simplex, amplitude: 0.125, frequency: 10 },
+    { method: Simplex, amplitude: 0.0625, frequency: 20 },
+  ]);
 };
 
 /**
@@ -485,55 +485,55 @@ export function SimplexLayers(g: Vector3[], options: TerrainOptions) {
  * @param {Number[]} data The target heightmap.
  */
 function WhiteNoise(g: Vector3[], options: TerrainOptions, scale: number, segments: number, range: number, data: Float64Array) {
-    if (scale > segments) return;
-    var i = 0,
-        j = 0,
-        xl = segments,
-        yl = segments,
-        inc = Math.floor(segments / scale),
-        lastX = -inc,
-        lastY = -inc;
-    // Walk over the target. For a target of size W and a resolution of N,
-    // set every W/N points (in both directions).
-    for (i = 0; i <= xl; i += inc) {
-        for (j = 0; j <= yl; j += inc) {
-            var k = j * xl + i;
-            data[k] = Math.random() * range;
-            if (lastX < 0 && lastY < 0) continue;
-            /* c b *
-             * l t */
-            var t = data[k],
-                l = data[j * xl + (i - inc)] || t, // left
-                b = data[(j - inc) * xl + i] || t, // bottom
-                c = data[(j - inc) * xl + (i - inc)] || t; // corner
-            // Interpolate between adjacent points to set the height of
-            // higher-resolution target data.
-            for (var x = lastX; x < i; x++) {
-                for (var y = lastY; y < j; y++) {
-                    if (x === lastX && y === lastY) continue;
-                    var z = y * xl + x;
-                    if (z < 0) continue;
-                    var px = ((x - lastX) / inc),
-                        py = ((y - lastY) / inc),
-                        r1 = px * b + (1 - px) * c,
-                        r2 = px * t + (1 - px) * l;
-                    data[z] = py * r2 + (1 - py) * r1;
-                }
-            }
-            lastY = j;
+  if (scale > segments) return;
+  let i = 0,
+    j = 0,
+    xl = segments,
+    yl = segments,
+    inc = Math.floor(segments / scale),
+    lastX = -inc,
+    lastY = -inc;
+  // Walk over the target. For a target of size W and a resolution of N,
+  // set every W/N points (in both directions).
+  for (i = 0; i <= xl; i += inc) {
+    for (j = 0; j <= yl; j += inc) {
+      let k = j * xl + i;
+      data[k] = Math.random() * range;
+      if (lastX < 0 && lastY < 0) continue;
+      /* c b *
+       * l t */
+      let t = data[k],
+        l = data[j * xl + (i - inc)] || t, // left
+        b = data[(j - inc) * xl + i] || t, // bottom
+        c = data[(j - inc) * xl + (i - inc)] || t; // corner
+      // Interpolate between adjacent points to set the height of
+      // higher-resolution target data.
+      for (let x = lastX; x < i; x++) {
+        for (let y = lastY; y < j; y++) {
+          if (x === lastX && y === lastY) continue;
+          let z = y * xl + x;
+          if (z < 0) continue;
+          let px = ((x - lastX) / inc),
+            py = ((y - lastY) / inc),
+            r1 = px * b + (1 - px) * c,
+            r2 = px * t + (1 - px) * l;
+          data[z] = py * r2 + (1 - py) * r1;
         }
-        lastX = i;
-        lastY = -inc;
+      }
+      lastY = j;
     }
-    // Assign the temporary data back to the actual terrain heightmap.
-    for (i = 0, xl = options.xSegments + 1; i < xl; i++) {
-        for (j = 0, yl = options.ySegments + 1; j < yl; j++) {
-            // http://stackoverflow.com/q/23708306/843621
-            var kg = j * xl + i,
-                kd = j * segments + i;
-            g[kg].z += data[kd];
-        }
+    lastX = i;
+    lastY = -inc;
+  }
+  // Assign the temporary data back to the actual terrain heightmap.
+  for (i = 0, xl = options.xSegments + 1; i < xl; i++) {
+    for (j = 0, yl = options.ySegments + 1; j < yl; j++) {
+      // http://stackoverflow.com/q/23708306/843621
+      let kg = j * xl + i,
+        kd = j * segments + i;
+      g[kg].z += data[kd];
     }
+  }
 }
 
 /**
@@ -546,29 +546,29 @@ function WhiteNoise(g: Vector3[], options: TerrainOptions, scale: number, segmen
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function Value(g: Vector3[], options: TerrainOptions) {
-    // Set the segment length to the smallest power of 2 that is greater
-    // than the number of vertices in either dimension of the plane
-    var segments = ThreeMath.nextPowerOfTwo(Math.max(options.xSegments, options.ySegments) + 1);
+  // Set the segment length to the smallest power of 2 that is greater
+  // than the number of vertices in either dimension of the plane
+  let segments = ThreeMath.nextPowerOfTwo(Math.max(options.xSegments, options.ySegments) + 1);
 
-    // Store the array of white noise outside of the WhiteNoise function to
-    // avoid allocating a bunch of unnecessary arrays; we can just
-    // overwrite old data each time WhiteNoise() is called.
-    var data = new Float64Array((segments + 1) * (segments + 1));
+  // Store the array of white noise outside of the WhiteNoise function to
+  // avoid allocating a bunch of unnecessary arrays; we can just
+  // overwrite old data each time WhiteNoise() is called.
+  let data = new Float64Array((segments + 1) * (segments + 1));
 
-    // Layer white noise at different resolutions.
-    var range = options.maxHeight - options.minHeight;
-    for (var i = 2; i < 7; i++) {
-        WhiteNoise(g, options, Math.pow(2, i), segments, range * Math.pow(2, 2.4 - i * 1.2), data);
-    }
+  // Layer white noise at different resolutions.
+  let range = options.maxHeight - options.minHeight;
+  for (let i = 2; i < 7; i++) {
+    WhiteNoise(g, options, Math.pow(2, i), segments, range * Math.pow(2, 2.4 - i * 1.2), data);
+  }
 
-    // White noise creates some weird artifacts; fix them.
-    // THREE.Terrain.Smooth(g, options, 1);
-    Clamp(g, {
-        maxHeight: options.maxHeight,
-        minHeight: options.minHeight,
-        stretch: true,
-        easing: Linear
-    });
+  // White noise creates some weird artifacts; fix them.
+  // THREE.Terrain.Smooth(g, options, 1);
+  Clamp(g, {
+    maxHeight: options.maxHeight,
+    minHeight: options.minHeight,
+    stretch: true,
+    easing: Linear
+  });
 };
 
 /**
@@ -581,27 +581,27 @@ export function Value(g: Vector3[], options: TerrainOptions) {
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
 export function Weierstrass(g: Vector3[], options: TerrainOptions) {
-    var range = (options.maxHeight - options.minHeight) * 0.5,
-        dir1 = Math.random() < 0.5 ? 1 : -1,
-        dir2 = Math.random() < 0.5 ? 1 : -1,
-        r11 = 0.5 + Math.random() * 1.0,
-        r12 = 0.5 + Math.random() * 1.0,
-        r13 = 0.025 + Math.random() * 0.10,
-        r14 = -1.0 + Math.random() * 2.0,
-        r21 = 0.5 + Math.random() * 1.0,
-        r22 = 0.5 + Math.random() * 1.0,
-        r23 = 0.025 + Math.random() * 0.10,
-        r24 = -1.0 + Math.random() * 2.0;
-    for (var i = 0, xl = options.xSegments + 1; i < xl; i++) {
-        for (var j = 0, yl = options.ySegments + 1; j < yl; j++) {
-            var sum = 0;
-            for (var k = 0; k < 20; k++) {
-                var x = Math.pow(1 + r11, -k) * Math.sin(Math.pow(1 + r12, k) * (i + 0.25 * Math.cos(j) + r14 * j) * r13);
-                var y = Math.pow(1 + r21, -k) * Math.sin(Math.pow(1 + r22, k) * (j + 0.25 * Math.cos(i) + r24 * i) * r23);
-                sum -= Math.exp(dir1 * x * x + dir2 * y * y);
-            }
-            g[j * xl + i].z += sum * range;
-        }
+  let range = (options.maxHeight - options.minHeight) * 0.5,
+    dir1 = Math.random() < 0.5 ? 1 : -1,
+    dir2 = Math.random() < 0.5 ? 1 : -1,
+    r11 = 0.5 + Math.random() * 1.0,
+    r12 = 0.5 + Math.random() * 1.0,
+    r13 = 0.025 + Math.random() * 0.10,
+    r14 = -1.0 + Math.random() * 2.0,
+    r21 = 0.5 + Math.random() * 1.0,
+    r22 = 0.5 + Math.random() * 1.0,
+    r23 = 0.025 + Math.random() * 0.10,
+    r24 = -1.0 + Math.random() * 2.0;
+  for (let i = 0, xl = options.xSegments + 1; i < xl; i++) {
+    for (let j = 0, yl = options.ySegments + 1; j < yl; j++) {
+      let sum = 0;
+      for (let k = 0; k < 20; k++) {
+        let x = Math.pow(1 + r11, -k) * Math.sin(Math.pow(1 + r12, k) * (i + 0.25 * Math.cos(j) + r14 * j) * r13);
+        let y = Math.pow(1 + r21, -k) * Math.sin(Math.pow(1 + r22, k) * (j + 0.25 * Math.cos(i) + r24 * i) * r23);
+        sum -= Math.exp(dir1 * x * x + dir2 * y * y);
+      }
+      g[j * xl + i].z += sum * range;
     }
-    Clamp(g, options);
+  }
+  Clamp(g, options);
 };

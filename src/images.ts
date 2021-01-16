@@ -13,22 +13,22 @@ import { TerrainOptions } from "./basicTypes";
  *   of {@link THREE.Terrain}().
  */
 export function fromHeightmap(g: Vector3[], options: TerrainOptions) {
-    var canvas = document.createElement('canvas'),
-        context = canvas.getContext('2d'),
-        rows = options.ySegments + 1,
-        cols = options.xSegments + 1,
-        spread = options.maxHeight - options.minHeight;
-    canvas.width = cols;
-    canvas.height = rows;
-    context!.drawImage(options.heightmap! as HTMLCanvasElement, 0, 0, canvas.width, canvas.height);
-    var data = context!.getImageData(0, 0, canvas.width, canvas.height).data;
-    for (var row = 0; row < rows; row++) {
-        for (var col = 0; col < cols; col++) {
-            var i = row * cols + col,
-                idx = i * 4;
-            g[i].z = (data[idx] + data[idx + 1] + data[idx + 2]) / 765 * spread + options.minHeight;
-        }
+  let canvas = document.createElement('canvas'),
+    context = canvas.getContext('2d'),
+    rows = options.ySegments + 1,
+    cols = options.xSegments + 1,
+    spread = options.maxHeight - options.minHeight;
+  canvas.width = cols;
+  canvas.height = rows;
+  context!.drawImage(options.heightmap! as HTMLCanvasElement, 0, 0, canvas.width, canvas.height);
+  let data = context!.getImageData(0, 0, canvas.width, canvas.height).data;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      let i = row * cols + col,
+        idx = i * 4;
+      g[i].z = (data[idx] + data[idx + 1] + data[idx + 2]) / 765 * spread + options.minHeight;
     }
+  }
 };
 
 /**
@@ -47,37 +47,37 @@ export function fromHeightmap(g: Vector3[], options: TerrainOptions) {
  *   A canvas with the relevant heightmap painted on it.
  */
 export function toHeightmap(g: Vector3[], options: TerrainOptions) {
-    var hasMax = typeof options.maxHeight !== 'undefined',
-        hasMin = typeof options.minHeight !== 'undefined',
-        max = hasMax ? options.maxHeight : -Infinity,
-        min = hasMin ? options.minHeight : Infinity;
-    if (!hasMax || !hasMin) {
-        var max2 = max,
-            min2 = min;
-        for (var k = 0, l = g.length; k < l; k++) {
-            if (g[k].z > max2) max2 = g[k].z;
-            if (g[k].z < min2) min2 = g[k].z;
-        }
-        if (!hasMax) max = max2;
-        if (!hasMin) min = min2;
+  let hasMax = typeof options.maxHeight !== 'undefined',
+    hasMin = typeof options.minHeight !== 'undefined',
+    max = hasMax ? options.maxHeight : -Infinity,
+    min = hasMin ? options.minHeight : Infinity;
+  if (!hasMax || !hasMin) {
+    let max2 = max,
+      min2 = min;
+    for (let k = 0, l = g.length; k < l; k++) {
+      if (g[k].z > max2) max2 = g[k].z;
+      if (g[k].z < min2) min2 = g[k].z;
     }
-    var canvas = options.heightmap instanceof HTMLCanvasElement ? options.heightmap : document.createElement('canvas'),
-        context = canvas.getContext('2d'),
-        rows = options.ySegments + 1,
-        cols = options.xSegments + 1,
-        spread = max - min;
-    canvas.width = cols;
-    canvas.height = rows;
-    var d = context!.createImageData(canvas.width, canvas.height),
-        data = d.data;
-    for (var row = 0; row < rows; row++) {
-        for (var col = 0; col < cols; col++) {
-            var i = row * cols + col,
-                idx = i * 4;
-            data[idx] = data[idx + 1] = data[idx + 2] = Math.round(((g[i].z - min) / spread) * 255);
-            data[idx + 3] = 255;
-        }
+    if (!hasMax) max = max2;
+    if (!hasMin) min = min2;
+  }
+  let canvas = options.heightmap instanceof HTMLCanvasElement ? options.heightmap : document.createElement('canvas'),
+    context = canvas.getContext('2d'),
+    rows = options.ySegments + 1,
+    cols = options.xSegments + 1,
+    spread = max - min;
+  canvas.width = cols;
+  canvas.height = rows;
+  let d = context!.createImageData(canvas.width, canvas.height),
+    data = d.data;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      let i = row * cols + col,
+        idx = i * 4;
+      data[idx] = data[idx + 1] = data[idx + 2] = Math.round(((g[i].z - min) / spread) * 255);
+      data[idx + 3] = 255;
     }
-    context!.putImageData(d, 0, 0);
-    return canvas;
+  }
+  context!.putImageData(d, 0, 0);
+  return canvas;
 };

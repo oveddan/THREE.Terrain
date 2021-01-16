@@ -6,16 +6,16 @@ import { Clamp } from './filters';
 
 type SpreadFunction = (v: Vector3, k: number, f: Face3, faceX: number, faceY: number) => boolean;
 interface ScatterOptions {
-    mesh: Mesh;
-    spread: number | SpreadFunction;
-    smoothSpread: number;
-    scene: Object3D;
-    sizeVariance: number;
-    randomness: () => (number | number[]);
-    maxSlope: number;
-    maxTilt: number;
-    w: number;
-    h: number;
+  mesh: Mesh;
+  spread: number | SpreadFunction;
+  smoothSpread: number;
+  scene: Object3D;
+  sizeVariance: number;
+  randomness: () => (number | number[]);
+  maxSlope: number;
+  maxTilt: number;
+  w: number;
+  h: number;
 }
 
 /**
@@ -68,119 +68,119 @@ interface ScatterOptions {
  *   otherwise the position and rotation of the meshes will be wrong.
  */
 export function ScatterMeshes(geometry: Geometry, inputOptions: Partial<ScatterOptions>) {
-    if (!inputOptions.mesh) {
-        console.error('options.mesh is required for THREE.Terrain.ScatterMeshes but was not passed');
-        return;
-    }
-    if (geometry instanceof BufferGeometry) {
-        console.warn('The terrain mesh is using BufferGeometry but ScatterMeshes can only work with Geometry.');
-        return;
-    }
-    if (!inputOptions.scene) {
-        inputOptions.scene = new Object3D();
-    }
-    let options = {
-        spread: 0.025,
-        smoothSpread: 0,
-        sizeVariance: 0.1,
-        randomness: Math.random,
-        maxSlope: 0.6283185307179586, // 36deg or 36 / 180 * Math.PI, about the angle of repose of earth
-        maxTilt: Infinity,
-        w: 0,
-        h: 0,
-        ...inputOptions
-    } as ScatterOptions;
+  if (!inputOptions.mesh) {
+    console.error('options.mesh is required for THREE.Terrain.ScatterMeshes but was not passed');
+    return;
+  }
+  if (geometry instanceof BufferGeometry) {
+    console.warn('The terrain mesh is using BufferGeometry but ScatterMeshes can only work with Geometry.');
+    return;
+  }
+  if (!inputOptions.scene) {
+    inputOptions.scene = new Object3D();
+  }
+  let options = {
+    spread: 0.025,
+    smoothSpread: 0,
+    sizeVariance: 0.1,
+    randomness: Math.random,
+    maxSlope: 0.6283185307179586, // 36deg or 36 / 180 * Math.PI, about the angle of repose of earth
+    maxTilt: Infinity,
+    w: 0,
+    h: 0,
+    ...inputOptions
+  } as ScatterOptions;
 
-    let randomHeightmap: number | number[],
-        randomness: (k: number) => number = () => 0.0,
-        spreadRange = 1 / options.smoothSpread,
-        doubleSizeVariance = options.sizeVariance * 2,
-        v = geometry.vertices,
-        meshes = [],
-        up = options.mesh.up.clone().applyAxisAngle(new Vector3(1, 0, 0), 0.5 * Math.PI);
+  let randomHeightmap: number | number[],
+    randomness: (k: number) => number = () => 0.0,
+    spreadRange = 1 / options.smoothSpread,
+    doubleSizeVariance = options.sizeVariance * 2,
+    v = geometry.vertices,
+    meshes = [],
+    up = options.mesh.up.clone().applyAxisAngle(new Vector3(1, 0, 0), 0.5 * Math.PI);
 
-    if (typeof options.spread === 'number') {
-        randomHeightmap = options.randomness();
-        randomness = typeof randomHeightmap === 'number' ? Math.random : function (k: number) { return (randomHeightmap as number[])[k]; };
-    }
+  if (typeof options.spread === 'number') {
+    randomHeightmap = options.randomness();
+    randomness = typeof randomHeightmap === 'number' ? Math.random : function (k: number) { return (randomHeightmap as number[])[k]; };
+  }
 
-    // geometry.computeFaceNormals();
-    for (var i = 0, w = options.w * 2; i < w; i++) {
-        for (var j = 0, h = options.h; j < h; j++) {
-            var key = j * w + i,
-                f = geometry.faces[key],
-                place = false;
-            if (typeof options.spread === 'number') {
-                var rv = randomness(key);
-                if (rv < options.spread) {
-                    place = true;
-                }
-                else if (rv < options.spread + options.smoothSpread) {
-                    // Interpolate rv between spread and spread + smoothSpread,
-                    // then multiply that "easing" value by the probability
-                    // that a mesh would get placed on a given face.
-                    place = EaseInOut((rv - options.spread) * spreadRange) * options.spread > Math.random();
-                }
-            }
-            else {
-                place = (options.spread as SpreadFunction)(v[f.a], key, f, i, j);
-            }
-            if (place) {
-                // Don't place a mesh if the angle is too steep.
-                if (f.normal.angleTo(up) > options.maxSlope) {
-                    continue;
-                }
-                var mesh = options.mesh.clone();
-                // mesh.geometry.computeBoundingBox();
-                mesh.position.copy(v[f.a]).add(v[f.b]).add(v[f.c]).divideScalar(3);
-                // mesh.translateZ((mesh.geometry.boundingBox.max.z - mesh.geometry.boundingBox.min.z) * 0.5);
-                if (options.maxTilt > 0) {
-                    var normal = mesh.position.clone().add(f.normal);
-                    mesh.lookAt(normal);
-                    var tiltAngle = f.normal.angleTo(up);
-                    if (tiltAngle > options.maxTilt) {
-                        var ratio = options.maxTilt / tiltAngle;
-                        mesh.rotation.x *= ratio;
-                        mesh.rotation.y *= ratio;
-                        mesh.rotation.z *= ratio;
-                    }
-                }
-                mesh.rotation.x += 90 / 180 * Math.PI;
-                mesh.rotateY(Math.random() * 2 * Math.PI);
-                if (options.sizeVariance) {
-                    var variance = Math.random() * doubleSizeVariance - options.sizeVariance;
-                    mesh.scale.x = mesh.scale.z = 1 + variance;
-                    mesh.scale.y += variance;
-                }
-                meshes.push(mesh);
-            }
+  // geometry.computeFaceNormals();
+  for (let i = 0, w = options.w * 2; i < w; i++) {
+    for (let j = 0, h = options.h; j < h; j++) {
+      let key = j * w + i,
+        f = geometry.faces[key],
+        place = false;
+      if (typeof options.spread === 'number') {
+        let rv = randomness(key);
+        if (rv < options.spread) {
+          place = true;
         }
+        else if (rv < options.spread + options.smoothSpread) {
+          // Interpolate rv between spread and spread + smoothSpread,
+          // then multiply that "easing" value by the probability
+          // that a mesh would get placed on a given face.
+          place = EaseInOut((rv - options.spread) * spreadRange) * options.spread > Math.random();
+        }
+      }
+      else {
+        place = (options.spread as SpreadFunction)(v[f.a], key, f, i, j);
+      }
+      if (place) {
+        // Don't place a mesh if the angle is too steep.
+        if (f.normal.angleTo(up) > options.maxSlope) {
+          continue;
+        }
+        let mesh = options.mesh.clone();
+        // mesh.geometry.computeBoundingBox();
+        mesh.position.copy(v[f.a]).add(v[f.b]).add(v[f.c]).divideScalar(3);
+        // mesh.translateZ((mesh.geometry.boundingBox.max.z - mesh.geometry.boundingBox.min.z) * 0.5);
+        if (options.maxTilt > 0) {
+          let normal = mesh.position.clone().add(f.normal);
+          mesh.lookAt(normal);
+          let tiltAngle = f.normal.angleTo(up);
+          if (tiltAngle > options.maxTilt) {
+            let ratio = options.maxTilt / tiltAngle;
+            mesh.rotation.x *= ratio;
+            mesh.rotation.y *= ratio;
+            mesh.rotation.z *= ratio;
+          }
+        }
+        mesh.rotation.x += 90 / 180 * Math.PI;
+        mesh.rotateY(Math.random() * 2 * Math.PI);
+        if (options.sizeVariance) {
+          let variance = Math.random() * doubleSizeVariance - options.sizeVariance;
+          mesh.scale.x = mesh.scale.z = 1 + variance;
+          mesh.scale.y += variance;
+        }
+        meshes.push(mesh);
+      }
     }
+  }
 
-    // Merge geometries.
-    var k, l;
-    if (options.mesh.geometry instanceof Geometry) {
-        var g = new Geometry();
-        for (k = 0, l = meshes.length; k < l; k++) {
-            var m = meshes[k];
-            m.updateMatrix();
-            g.merge(m.geometry as Geometry, m.matrix);
-        }
-        /*
-        if (!(options.mesh.material instanceof THREE.MeshFaceMaterial)) {
-            g = THREE.BufferGeometryUtils.fromGeometry(g);
-        }
-        */
-        options.scene.add(new Mesh(g, options.mesh.material));
+  // Merge geometries.
+  let k, l;
+  if (options.mesh.geometry instanceof Geometry) {
+    let g = new Geometry();
+    for (k = 0, l = meshes.length; k < l; k++) {
+      let m = meshes[k];
+      m.updateMatrix();
+      g.merge(m.geometry as Geometry, m.matrix);
     }
-    // There's no BufferGeometry merge method implemented yet.
-    else {
-        for (k = 0, l = meshes.length; k < l; k++) {
-            options.scene.add(meshes[k]);
-        }
+    /*
+    if (!(options.mesh.material instanceof THREE.MeshFaceMaterial)) {
+        g = THREE.BufferGeometryUtils.fromGeometry(g);
     }
+    */
+    options.scene.add(new Mesh(g, options.mesh.material));
+  }
+  // There's no BufferGeometry merge method implemented yet.
+  else {
+    for (k = 0, l = meshes.length; k < l; k++) {
+      options.scene.add(meshes[k]);
+    }
+  }
 
-    return options.scene;
+  return options.scene;
 };
 
 /**
@@ -212,24 +212,24 @@ export function ScatterMeshes(geometry: Geometry, inputOptions: Partial<ScatterO
  *   function.
  */
 export function ScatterHelper(method: HeightmapFunction, options: TerrainOptions, skip: number = 1, threshold: number = 0.25) {
-    options.frequency = options.frequency || 2.5;
+  options.frequency = options.frequency || 2.5;
 
-    let clonedOptions = { ...options };
+  let clonedOptions = { ...options };
 
-    clonedOptions.xSegments *= 2;
-    clonedOptions.stretch = true;
-    clonedOptions.maxHeight = 1;
-    clonedOptions.minHeight = 0;
-    var heightmap = heightmapArray(method, clonedOptions);
+  clonedOptions.xSegments *= 2;
+  clonedOptions.stretch = true;
+  clonedOptions.maxHeight = 1;
+  clonedOptions.minHeight = 0;
+  let heightmap = heightmapArray(method, clonedOptions);
 
-    for (var i = 0, l = heightmap.length; i < l; i++) {
-        if (i % skip || Math.random() > threshold) {
-            heightmap[i] = 1; // 0 = place, 1 = don't place
-        }
+  for (let i = 0, l = heightmap.length; i < l; i++) {
+    if (i % skip || Math.random() > threshold) {
+      heightmap[i] = 1; // 0 = place, 1 = don't place
     }
-    return function () {
-        return heightmap;
-    };
+  }
+  return function () {
+    return heightmap;
+  };
 };
 
 /**
@@ -247,25 +247,25 @@ export function ScatterHelper(method: HeightmapFunction, options: TerrainOptions
  *   The same as the options parameter for the {@link THREE.Terrain} function.
  */
 export function heightmapArray(method: Function, options: TerrainOptions) {
-    var arr = new Array((options.xSegments + 1) * (options.ySegments + 1)),
-        l = arr.length,
-        i;
-    // The heightmap functions provided by this script operate on THREE.Vector3
-    // objects by changing the z field, so we need to make that available.
-    // Unfortunately that means creating a bunch of objects we're just going to
-    // throw away, but a conscious decision was made here to optimize for the
-    // vector case.
-    for (i = 0; i < l; i++) {
-        arr[i] = { z: 0 };
-    }
-    options.minHeight = options.minHeight || 0;
-    options.maxHeight = typeof options.maxHeight === 'undefined' ? 1 : options.maxHeight;
-    options.stretch = options.stretch || false;
-    method(arr, options);
-    Clamp(arr, options);
-    for (i = 0; i < l; i++) {
-        arr[i] = arr[i].z;
-    }
-    return arr;
+  let arr = new Array((options.xSegments + 1) * (options.ySegments + 1)),
+    l = arr.length,
+    i;
+  // The heightmap functions provided by this script operate on THREE.Vector3
+  // objects by changing the z field, so we need to make that available.
+  // Unfortunately that means creating a bunch of objects we're just going to
+  // throw away, but a conscious decision was made here to optimize for the
+  // vector case.
+  for (i = 0; i < l; i++) {
+    arr[i] = { z: 0 };
+  }
+  options.minHeight = options.minHeight || 0;
+  options.maxHeight = typeof options.maxHeight === 'undefined' ? 1 : options.maxHeight;
+  options.stretch = options.stretch || false;
+  method(arr, options);
+  Clamp(arr, options);
+  for (i = 0; i < l; i++) {
+    arr[i] = arr[i].z;
+  }
+  return arr;
 };
 

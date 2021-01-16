@@ -5,22 +5,22 @@ export type EasingFunction = (x: number) => number;
 export type HeightmapFunction = ((g: Vector3[], options: TerrainOptions) => void);
 
 export interface TerrainOptions {
-    after: ((v: Vector3[], options: TerrainOptions) => void) | null;
-    easing: EasingFunction;
-    heightmap: HTMLCanvasElement | ImageBitmap | HeightmapFunction;
-    material: Material | null;
-    maxHeight: number;
-    minHeight: number;
-    optimization: Optimization;
-    frequency: number;
-    steps: number;
-    stretch: boolean;
-    turbulent: boolean;
-    useBufferGeometry: boolean;
-    xSegments: number;
-    xSize: number;
-    ySegments: number;
-    ySize: number;
+  after: ((v: Vector3[], options: TerrainOptions) => void) | null;
+  easing: EasingFunction;
+  heightmap: HTMLCanvasElement | ImageBitmap | HeightmapFunction;
+  material: Material | null;
+  maxHeight: number;
+  minHeight: number;
+  optimization: Optimization;
+  frequency: number;
+  steps: number;
+  stretch: boolean;
+  turbulent: boolean;
+  useBufferGeometry: boolean;
+  xSegments: number;
+  xSize: number;
+  ySegments: number;
+  ySize: number;
 }
 
 /**
@@ -78,10 +78,10 @@ export interface TerrainOptions {
  */
 
 export enum Optimization {
-    NONE = 0,
-    GEOMIPMAP = 1,
-    GEOCLIPMAP = 2,
-    POLYGONREDUCTION = 3,
+  NONE = 0,
+  GEOMIPMAP = 1,
+  GEOCLIPMAP = 2,
+  POLYGONREDUCTION = 3,
 };
 
 /**
@@ -119,7 +119,7 @@ export type FalloffFunction = (distanceToFeatureOrigin: number, xDistanceToFeatu
  *   x- and y-distances from the feature's origin, respectively.)
  */
 export type BlendingFunction = (
-    currentTerrainHeight: number, featureVertexDisplacement: number,
-    vertexDistanceFromFeatureOrigin: number,
-    xDistanceToFeatureOrigin?: number, yDistanceToFeatureOrigin?: number
+  currentTerrainHeight: number, featureVertexDisplacement: number,
+  vertexDistanceFromFeatureOrigin: number,
+  xDistanceToFeatureOrigin?: number, yDistanceToFeatureOrigin?: number
 ) => number;
