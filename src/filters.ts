@@ -14,7 +14,7 @@ import { Linear, EaseInOut } from "./core";
  *   of {@link THREE.Terrain}() but only `maxHeight`, `minHeight`, `easing`, and `stretch`
  *   are used.
  */
-export function Clamp(g: Vector3[], options: Pick<TerrainOptions, 'maxHeight' | 'minHeight' | 'easing' | 'stretch'>) {
+export function applyTerrainClamp(g: Vector3[], options: Pick<TerrainOptions, 'maxHeight' | 'minHeight' | 'easing' | 'stretch'>) {
   let min = Infinity,
     max = -Infinity,
     l = g.length,
@@ -71,12 +71,12 @@ export function Clamp(g: Vector3[], options: Pick<TerrainOptions, 'maxHeight' | 
  *   and `right` Boolean properties specifying which edges to affect.
  */
 export function Edges(g: Vector3[], options: TerrainOptions, direction: boolean, distance: number, easing: EasingFunction, edges: { top: boolean; bottom: boolean; left: boolean; right: boolean }) {
-  let numXSegments = Math.floor(distance / (options.xSize / options.xSegments)) || 1,
-    numYSegments = Math.floor(distance / (options.ySize / options.ySegments)) || 1,
+  let numXSegments = Math.floor(distance / (options.width / options.widthSegments)) || 1,
+    numYSegments = Math.floor(distance / (options.height / options.heightSegments)) || 1,
     peak = direction ? options.maxHeight : options.minHeight,
     max = direction ? Math.max : Math.min,
-    xl = options.xSegments + 1,
-    yl = options.ySegments + 1,
+    xl = options.widthSegments + 1,
+    yl = options.heightSegments + 1,
     i, j, multiplier, k1, k2;
   easing = easing || EaseInOut;
   if (typeof edges !== 'object') {
@@ -86,7 +86,7 @@ export function Edges(g: Vector3[], options: TerrainOptions, direction: boolean,
     for (j = 0; j < numYSegments; j++) {
       multiplier = easing(1 - j / numYSegments);
       k1 = j * xl + i;
-      k2 = (options.ySegments - j) * xl + i;
+      k2 = (options.heightSegments - j) * xl + i;
       if (edges.top) {
         g[k1].z = max(g[k1].z, (peak - g[k1].z) * multiplier + g[k1].z);
       }
@@ -99,7 +99,7 @@ export function Edges(g: Vector3[], options: TerrainOptions, direction: boolean,
     for (j = 0; j < numXSegments; j++) {
       multiplier = easing(1 - j / numXSegments);
       k1 = i * xl + j;
-      k2 = (options.ySegments - i) * xl + (options.xSegments - j);
+      k2 = (options.heightSegments - i) * xl + (options.widthSegments - j);
       if (edges.left) {
         g[k1].z = max(g[k1].z, (peak - g[k1].z) * multiplier + g[k1].z);
       }
@@ -108,7 +108,7 @@ export function Edges(g: Vector3[], options: TerrainOptions, direction: boolean,
       }
     }
   }
-  Clamp(g, {
+  applyTerrainClamp(g, {
     maxHeight: options.maxHeight,
     minHeight: options.minHeight,
     stretch: true,
@@ -146,13 +146,13 @@ export function Edges(g: Vector3[], options: TerrainOptions, direction: boolean,
 export function RadialEdges(g: Vector3[], options: TerrainOptions, direction: boolean, distance: number, easing: EasingFunction,) {
   let peak = direction ? options.maxHeight : options.minHeight,
     max = direction ? Math.max : Math.min,
-    xl = (options.xSegments + 1),
-    yl = (options.ySegments + 1),
+    xl = (options.widthSegments + 1),
+    yl = (options.heightSegments + 1),
     xl2 = xl * 0.5,
     yl2 = yl * 0.5,
-    xSegmentSize = options.xSize / options.xSegments,
-    ySegmentSize = options.ySize / options.ySegments,
-    edgeRadius = Math.min(options.xSize, options.ySize) * 0.5 - distance,
+    xSegmentSize = options.width / options.widthSegments,
+    ySegmentSize = options.height / options.heightSegments,
+    edgeRadius = Math.min(options.width, options.height) * 0.5 - distance,
     i, j, multiplier, k, vertexDistance;
   for (i = 0; i < xl; i++) {
     for (j = 0; j < yl2; j++) {
@@ -162,7 +162,7 @@ export function RadialEdges(g: Vector3[], options: TerrainOptions, direction: bo
       multiplier = easing(vertexDistance / edgeRadius);
       g[k].z = max(g[k].z, (peak - g[k].z) * multiplier + g[k].z);
       // Use symmetry to reduce the number of iterations.
-      k = (options.ySegments - j) * xl + i;
+      k = (options.heightSegments - j) * xl + i;
       g[k].z = max(g[k].z, (peak - g[k].z) * multiplier + g[k].z);
     }
   }
@@ -182,9 +182,9 @@ export function RadialEdges(g: Vector3[], options: TerrainOptions, direction: bo
  *   How much to weight the original vertex height against the average of its
  *   neighbors.
  */
-export function Smooth(g: Vector3[], options: TerrainOptions, weight: number = 0) {
+export function applyTerrainSmooth(g: Vector3[], options: TerrainOptions, weight: number = 0) {
   let heightmap = new Float64Array(g.length);
-  for (let i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
+  for (let i = 0, xl = options.widthSegments + 1, yl = options.heightSegments + 1; i < xl; i++) {
     for (let j = 0; j < yl; j++) {
       let sum = 0,
         c = 0;
@@ -218,7 +218,7 @@ export function SmoothMedian(g: Vector3[], options: TerrainOptions) {
     sortByValue = function (a: number, b: number) {
       return neighborValues[a] - neighborValues[b];
     };
-  for (let i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
+  for (let i = 0, xl = options.widthSegments + 1, yl = options.heightSegments + 1; i < xl; i++) {
     for (let j = 0; j < yl; j++) {
       neighborValues.length = 0;
       neighborKeys.length = 0;
@@ -266,7 +266,7 @@ export function SmoothMedian(g: Vector3[], options: TerrainOptions) {
  */
 export function SmoothConservative(g: Vector3[], options: TerrainOptions, multiplier: number) {
   let heightmap = new Float64Array(g.length);
-  for (let i = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; i < xl; i++) {
+  for (let i = 0, xl = options.widthSegments + 1, yl = options.heightSegments + 1; i < xl; i++) {
     for (let j = 0; j < yl; j++) {
       let max = -Infinity,
         min = Infinity;
@@ -304,7 +304,7 @@ export function SmoothConservative(g: Vector3[], options: TerrainOptions, multip
  *   The number of steps to divide the terrain into. Defaults to
  *   (g.length/2)^(1/4).
  */
-export function Step(g: Vector3[], levels?: number) {
+export function applyTerrainStep(g: Vector3[], levels?: number) {
   // Calculate the max, min, and avg values for each bucket
   const l = g.length;
   if (typeof levels === 'undefined') {
@@ -351,7 +351,7 @@ export function Step(g: Vector3[], levels?: number) {
  *
  * Parameters are the same as those for {@link THREE.Terrain.DiamondSquare}.
  */
-export function Turbulence(g: Vector3[], options: TerrainOptions) {
+export function applyTurbulenceTurbulence(g: Vector3[], options: TerrainOptions) {
   let range = options.maxHeight - options.minHeight;
   for (let i = 0, l = g.length; i < l; i++) {
     g[i].z = options.minHeight + Math.abs((g[i].z - options.minHeight) * 2 - range);

@@ -3,30 +3,59 @@ import { TerrainOptions } from "./basicTypes";
 
 /**
  * Convert an image-based heightmap into vertex-based height data.
- *
- * @param {THREE.Vector3[]} g
- *   The vertex array for plane geometry to modify with heightmap data. This
- *   method sets the `z` property of each vertex.
- * @param {Object} options
- *   A map of settings that control how the terrain is constructed and
- *   displayed. Valid values are the same as those for the `options` parameter
- *   of {@link THREE.Terrain}().
+ * @param verts
+ * The vertex array for plane geometry to modify with heightmap data. This
+ * method sets the `z` property of each vertex.
+ * @param options
+ * A map of settings that control how the terrain is constructed and
+ * displayed
  */
-export function fromHeightmap(g: Vector3[], options: TerrainOptions) {
-  let canvas = document.createElement('canvas'),
-    context = canvas.getContext('2d'),
-    rows = options.ySegments + 1,
-    cols = options.xSegments + 1,
-    spread = options.maxHeight - options.minHeight;
-  canvas.width = cols;
-  canvas.height = rows;
-  context!.drawImage(options.heightmap! as HTMLCanvasElement, 0, 0, canvas.width, canvas.height);
-  let data = context!.getImageData(0, 0, canvas.width, canvas.height).data;
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      let i = row * cols + col,
-        idx = i * 4;
-      g[i].z = (data[idx] + data[idx + 1] + data[idx + 2]) / 765 * spread + options.minHeight;
+export function fromHeightmap(verts: Vector3[], options: TerrainOptions) {
+  const renderer = new OffscreenCanvas(
+    options.widthSegments,
+    options.heightSegments
+  );
+
+  const ctx = renderer.getContext("2d");
+
+  const spread = options.maxHeight - options.minHeight;
+
+  ctx.drawImage(
+    options.heightmap as CanvasImageSource,
+    0, 0,
+    renderer.width, renderer.height
+  );
+
+  let imgdata = ctx.getImageData(0, 0, renderer.width, renderer.height);
+  let data = imgdata.data;
+
+  let vertIndex = 0;
+  let pixelIndex = 0;
+
+  let vert: Vector3;
+
+  for (let x = 0; x < imgdata.width; x++) {
+    for (let y = 0; y < imgdata.height; y++) {
+      vertIndex = x * imgdata.height + y;
+      pixelIndex = vertIndex * 4;
+      
+      vert = verts[vertIndex];
+
+      //first implementation, doesn't make full use of bit depth
+      // vert.z = (
+      //   data[pixelIndex] +
+      //   data[pixelIndex + 1] +
+      //   data[pixelIndex + 2]
+      // ) / 765 * spread + options.minHeight;
+
+      //repcomm implementation, takes full advantage of bit depth
+      //bit shifts the channels, essentially reading a 3 byte integer
+      //note: alpha channel is left unused.. maybe use this for something in the future
+      vert.z = (
+        (data[pixelIndex + 0] << 16) +
+        (data[pixelIndex + 1] <<  8) +
+        (data[pixelIndex + 2]      )
+      ) / 0xffffff * spread + options.minHeight;
     }
   }
 };
@@ -63,8 +92,8 @@ export function toHeightmap(g: Vector3[], options: TerrainOptions) {
   }
   let canvas = options.heightmap instanceof HTMLCanvasElement ? options.heightmap : document.createElement('canvas'),
     context = canvas.getContext('2d'),
-    rows = options.ySegments + 1,
-    cols = options.xSegments + 1,
+    rows = options.heightSegments + 1,
+    cols = options.widthSegments + 1,
     spread = max - min;
   canvas.width = cols;
   canvas.height = rows;

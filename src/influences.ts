@@ -108,12 +108,12 @@ export function Influence(g: Vector3[], options: TerrainOptions,
   t: Blending | BlendingFunction = NormalBlending,
   e: FalloffFunction = EaseIn) {
   // Find the vertex location of the feature origin
-  let xl = options.xSegments + 1, // # x-vertices
-    yl = options.ySegments + 1, // # y-vertices
+  let xl = options.widthSegments + 1, // # x-vertices
+    yl = options.heightSegments + 1, // # y-vertices
     vx = xl * x, // vertex x-location
     vy = yl * y, // vertex y-location
-    xw = options.xSize / options.xSegments, // width of x-segments
-    yw = options.ySize / options.ySegments, // width of y-segments
+    xw = options.width / options.widthSegments, // width of x-segments
+    yw = options.height / options.heightSegments, // width of y-segments
     rx = r / xw, // radius of the feature in vertices on the x-axis
     ry = r / yw, // radius of the feature in vertices on the y-axis
     r1 = 1 / r, // for speed

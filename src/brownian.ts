@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 
 import { TerrainOptions } from './basicTypes';
 import { EaseInWeak } from './core';
-import { Smooth } from './filters';
+import { applyTerrainSmooth } from './filters';
 
 /**
  * Generate random terrain using Brownian motion.
@@ -14,13 +14,13 @@ import { Smooth } from './filters';
 export function Brownian(g: Vector3[], options: TerrainOptions) {
   let untouched = [],
     touched = [],
-    smallerSideSize = Math.min(options.xSize, options.ySize),
+    smallerSideSize = Math.min(options.width, options.height),
     changeDirectionProbability = Math.sqrt(smallerSideSize) / smallerSideSize,
     maxHeightAdjust = Math.sqrt(options.maxHeight - options.minHeight),
-    xl = options.xSegments + 1,
-    yl = options.ySegments + 1,
-    i = Math.floor(Math.random() * options.xSegments),
-    j = Math.floor(Math.random() * options.ySegments),
+    xl = options.widthSegments + 1,
+    yl = options.heightSegments + 1,
+    i = Math.floor(Math.random() * options.widthSegments),
+    j = Math.floor(Math.random() * options.heightSegments),
     x = i,
     y = j,
     numVertices = g.length,
@@ -136,6 +136,6 @@ export function Brownian(g: Vector3[], options: TerrainOptions) {
   }
 
   // Erase artifacts.
-  Smooth(g, options);
-  Smooth(g, options);
+  applyTerrainSmooth(g, options);
+  applyTerrainSmooth(g, options);
 };

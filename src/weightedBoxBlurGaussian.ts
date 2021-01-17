@@ -16,8 +16,8 @@ import { fromArray1D, toArray1D } from "./core";
 export function GaussianBoxBlur(g: Vector3[], options: TerrainOptions, s: number = 1, n: number = 3) {
   fromArray1D(g, gaussianBoxBlur(
     toArray1D(g),
-    options.xSegments + 1,
-    options.ySegments + 1,
+    options.widthSegments + 1,
+    options.heightSegments + 1,
     s,
     n
   ));

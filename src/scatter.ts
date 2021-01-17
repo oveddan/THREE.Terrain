@@ -2,7 +2,7 @@ import { BufferGeometry, Geometry, Mesh, Object3D, Vector3, Face3 } from 'three'
 
 import { HeightmapFunction, TerrainOptions } from './basicTypes';
 import { EaseInOut } from './core';
-import { Clamp } from './filters';
+import { applyTerrainClamp } from './filters';
 
 type SpreadFunction = (v: Vector3, k: number, f: Face3, faceX: number, faceY: number) => boolean;
 interface ScatterOptions {
@@ -216,7 +216,7 @@ export function ScatterHelper(method: HeightmapFunction, options: TerrainOptions
 
   let clonedOptions = { ...options };
 
-  clonedOptions.xSegments *= 2;
+  clonedOptions.widthSegments *= 2;
   clonedOptions.stretch = true;
   clonedOptions.maxHeight = 1;
   clonedOptions.minHeight = 0;
@@ -247,7 +247,7 @@ export function ScatterHelper(method: HeightmapFunction, options: TerrainOptions
  *   The same as the options parameter for the {@link THREE.Terrain} function.
  */
 export function heightmapArray(method: Function, options: TerrainOptions) {
-  let arr = new Array((options.xSegments + 1) * (options.ySegments + 1)),
+  let arr = new Array((options.widthSegments + 1) * (options.heightSegments + 1)),
     l = arr.length,
     i;
   // The heightmap functions provided by this script operate on THREE.Vector3
@@ -262,7 +262,7 @@ export function heightmapArray(method: Function, options: TerrainOptions) {
   options.maxHeight = typeof options.maxHeight === 'undefined' ? 1 : options.maxHeight;
   options.stretch = options.stretch || false;
   method(arr, options);
-  Clamp(arr, options);
+  applyTerrainClamp(arr, options);
   for (i = 0; i < l; i++) {
     arr[i] = arr[i].z;
   }

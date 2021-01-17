@@ -1,6 +1,6 @@
 import { Vector2, Vector3 } from "three";
 import { TerrainOptions } from "./basicTypes";
-import { Clamp } from "./filters";
+import { applyTerrainClamp } from "./filters";
 import { Linear } from "./core";
 
 interface DistanceMetrics {
@@ -58,7 +58,7 @@ function distanceToNearest(coords: Vector2, points: Vector2[], distanceType: str
   return color;
 }
 
-interface WorleyOptions extends Pick<TerrainOptions, 'xSegments' | 'ySegments' | 'minHeight' | 'maxHeight'> {
+interface WorleyOptions extends TerrainOptions {
   /**
    * The name of a method to use to calculate the
    * distance between a point in the heightmap and a Voronoi centroid in
@@ -116,19 +116,19 @@ interface WorleyOptions extends Pick<TerrainOptions, 'xSegments' | 'ySegments' |
  *   properties (see interface type `WorleyOptions`).
  */
 export function Worley(g: Vector3[], options: WorleyOptions) {
-  let points = (options.worleyDistribution || randomPoints)(options.xSegments, options.ySegments, options.worleyPoints!),
+  let points = (options.worleyDistribution || randomPoints)(options.widthSegments, options.heightSegments, options.worleyPoints!),
     transform = options.worleyDistanceTransformation || function (d) { return -d; },
     currentCoords = new Vector2(0, 0);
   // The height of each heightmap vertex is the distance to the closest Voronoi centroid
-  for (let i = 0, xl = options.xSegments! + 1; i < xl; i++) {
-    for (let j = 0; j < options.ySegments! + 1; j++) {
+  for (let i = 0, xl = options.widthSegments! + 1; i < xl; i++) {
+    for (let j = 0; j < options.heightSegments! + 1; j++) {
       currentCoords.x = i;
       currentCoords.y = j;
       g[j * xl + i].z = transform(distanceToNearest(currentCoords, points, options.distanceType || ''));
     }
   }
   // We set the heights to distances so now we need to normalize
-  Clamp(g, {
+  applyTerrainClamp(g, {
     maxHeight: options.maxHeight,
     minHeight: options.minHeight,
     stretch: true,

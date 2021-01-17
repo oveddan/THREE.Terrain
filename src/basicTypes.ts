@@ -1,26 +1,28 @@
-import { Vector3, Material } from 'three';
+
+import { Vector3, Material, Mesh } from 'three';
 
 export type EasingFunction = (x: number) => number;
 
 export type HeightmapFunction = ((g: Vector3[], options: TerrainOptions) => void);
 
 export interface TerrainOptions {
-  after: ((v: Vector3[], options: TerrainOptions) => void) | null;
-  easing: EasingFunction;
-  heightmap: HTMLCanvasElement | ImageBitmap | HeightmapFunction;
-  material: Material | null;
-  maxHeight: number;
-  minHeight: number;
-  optimization: Optimization;
-  frequency: number;
-  steps: number;
-  stretch: boolean;
-  turbulent: boolean;
-  useBufferGeometry: boolean;
-  xSegments: number;
-  xSize: number;
-  ySegments: number;
-  ySize: number;
+  after?: ((v: Vector3[], options: TerrainOptions) => void) | null;
+  easing?: EasingFunction;
+  heightmap?: CanvasImageSource | HeightmapFunction;
+  material?: Material | null;
+  maxHeight?: number;
+  minHeight?: number;
+  optimization?: Optimization;
+  frequency?: number;
+  steps?: number;
+  stretch?: boolean;
+  turbulent?: boolean;
+  useBufferGeometry?: boolean;
+  widthSegments?: number;
+  width?: number;
+  heightSegments?: number;
+  height?: number;
+  mesh?: Mesh;
 }
 
 /**

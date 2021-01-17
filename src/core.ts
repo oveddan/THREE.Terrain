@@ -3,28 +3,29 @@ import { Vector3 } from 'three';
 import { TerrainOptions } from './basicTypes';
 
 /**
+ * Oh god, please no
  * Get a 2D array of heightmap values from a 1D array of plane vertices.
  *
- * @param {THREE.Vector3[]} vertices
+ * @param vertices
  *   A 1D array containing the vertices of the plane geometry representing the
  *   terrain, where the z-value of the vertices represent the terrain's
  *   heightmap.
- * @param {Object} options
+ * @param options
  *   A map of settings defining properties of the terrain. The only properties
  *   that matter here are `xSegments` and `ySegments`, which represent how many
  *   vertices wide and deep the terrain plane is, respectively (and therefore
  *   also the dimensions of the returned array).
  *
- * @return {Number[][]}
+ * @return
  *   A 2D array representing the terrain's heightmap.
  */
 export function toArray2D(vertices: Vector3[], options: TerrainOptions): Float64Array[] {
-  let tgt = new Array<Float64Array>(options.xSegments + 1),
-    xl = options.xSegments + 1,
-    yl = options.ySegments + 1,
+  let tgt = new Array<Float64Array>(options.widthSegments + 1),
+    xl = options.widthSegments + 1,
+    yl = options.heightSegments + 1,
     i, j;
   for (i = 0; i < xl; i++) {
-    tgt[i] = new Float64Array(options.ySegments + 1);
+    tgt[i] = new Float64Array(options.heightSegments + 1);
     for (j = 0; j < yl; j++) {
       tgt[i][j] = vertices[j * xl + i].z;
     }
@@ -35,11 +36,11 @@ export function toArray2D(vertices: Vector3[], options: TerrainOptions): Float64
 /**
  * Set the height of plane vertices from a 2D array of heightmap values.
  *
- * @param {THREE.Vector3[]} vertices
+ * @param vertices
  *   A 1D array containing the vertices of the plane geometry representing the
  *   terrain, where the z-value of the vertices represent the terrain's
  *   heightmap.
- * @param {Number[][]} src
+ * @param src
  *   A 2D array representing a heightmap to apply to the terrain.
  */
 export function fromArray2D(vertices: Vector3[], src: Float64Array[]) {

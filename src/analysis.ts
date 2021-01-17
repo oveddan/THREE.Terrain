@@ -5,9 +5,9 @@ import { toArray1D } from "./core";
 /**
  * Analyze a terrain using statistical measures.
  *
- * @param {THREE.Mesh} mesh
+ * @param mesh
  *   The terrain mesh to analyze.
- * @param {Object} options
+ * @param options
  *   The map of settings that were passed to `THREE.Terrain()` to construct the
  *   terrain mesh that is being analyzed. Requires at least `maxHeight`,
  *   `minHeight`, `xSegments`, `xSize`, `ySegments`, and `ySize` properties.
@@ -51,7 +51,7 @@ export function Analyze(mesh: Mesh, options: TerrainOptions) {
     pearsonSkewSlope = 0,
     groeneveldMeedenSkewSlope = 0,
     kurtosisSlope = 0,
-    faceArea2D = (options.xSize / options.xSegments) * (options.ySize / options.ySegments) * 0.5,
+    faceArea2D = (options.width / options.widthSegments) * (options.height / options.heightSegments) * 0.5,
     area3D = 0,
     tri = 0,
     jaggedness = 0,
@@ -89,7 +89,7 @@ export function Analyze(mesh: Mesh, options: TerrainOptions) {
   stdevSlope = Math.sqrt(stdevSlope / numFaces);
   Array.prototype.sort.call(medianSlopeDeviations, sortNumeric);
 
-  for (let ii = 0, xl = options.xSegments + 1, yl = options.ySegments + 1; ii < xl; ii++) {
+  for (let ii = 0, xl = options.widthSegments + 1, yl = options.heightSegments + 1; ii < xl; ii++) {
     for (let j = 0; j < yl; j++) {
       let neighborhoodMax = -Infinity,
         neighborhoodMin = Infinity,
@@ -113,7 +113,7 @@ export function Analyze(mesh: Mesh, options: TerrainOptions) {
   }
   tri = Math.sqrt(tri / numVertices);
   // ceil(n/2)*ceil(m/2) is the max # of local maxima or minima in an n*m grid
-  jaggedness /= Math.ceil((options.xSegments + 1) * 0.5) * Math.ceil((options.ySegments + 1) * 0.5) * 2;
+  jaggedness /= Math.ceil((options.widthSegments + 1) * 0.5) * Math.ceil((options.heightSegments + 1) * 0.5) * 2;
 
   return {
     elevation: {
@@ -185,7 +185,7 @@ export function Analyze(mesh: Mesh, options: TerrainOptions) {
       },
     },
     roughness: {
-      planimetricAreaRatio: options.xSize * options.ySize / area3D,
+      planimetricAreaRatio: options.width * options.height / area3D,
       terrainRuggednessIndex: tri,
       jaggedness: jaggedness,
     },
