@@ -19,34 +19,37 @@ Depends on [three.js](https://github.com/mrdoob/three.js)
 import { Mesh, MeshBasicMaterial, Scene, CylinderGeometry } from "three";
 import { Terrain, generateBlendedMaterial, scatterMeshes } from "@repcomm/three.terrain";
 
-const terrain = new Terrain ({
-  easing: "linear",
-  frequency: 2.5,
-  heightmap: "diamond-square",
-  material: new MeshBasicMaterial({color: 0x5566aa}),
-  maxHeight: 100,
+let intervals = 63;
+
+const terrain = new Terrain({
+  material: new MeshStandardMaterial({
+    color: 0x44dd66,
+  }),
+  easing: EaseInWeak,
+  heightmap: DiamondSquare,
+  maxHeight: 250,
   minHeight: -100,
-  steps: 1,
+  steps: 0,
   useBufferGeometry: false,
-  xSegments: 63,
-  xSize: 1024,
-  ySegments: 63,
-  ySize: 1024
+  widthSegments: intervals,
+  width: 1024,
+  heightSegments: intervals,
+  height: 1024
 });
 
 const scene = new Scene();
 
-scene.add(terrainScene);
+scene.add(terrain);
 
 let decorations = scatterMeshes (
-  terrainScene.children[0].geometry, {
+  terrain.children[0].geometry, {
     mesh: new Mesh(new CylinderGeometry(2, 2, 12, 6)),
     w: xS,
     h: yS,
     spread: 0.02,
     randomness: Math.random,
 });
-terrainScene.add(decorations);
+terrain.add(decorations);
 ```
 
 ### Dynamic Terrain Materials
