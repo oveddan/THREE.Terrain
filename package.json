@@ -1,9 +1,11 @@
 {
-  "name": "@repcomm/three.terrain",
-  "version": "1.6.0",
-  "description": "Fork of mattes3/THREE.Terrain for use with npm / webpack",
+  "name": "oveddan-three-terrain",
+  "version": "1.6.1",
+  "description": "Fork of @repcomm/THREE.Terrain for use with npm / webpack",
   "homepage": "https://github.com/IceCreamYou/THREE.Terrain",
-  "bugs": "https://github.com/IceCreamYou/THREE.Terrain/issues",
+  "bugs": {
+    "url": "https://github.com/IceCreamYou/THREE.Terrain/issues"
+  },
   "main": "./lib/mod.js",
   "types": "./lib/mod.d.ts",
   "files": [
@@ -11,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/RepComm/THREE.Terrain.git"
+    "url": "git://github.com/oveddan/THREE.Terrain.git"
   },
   "keywords": [
     "THREE",
@@ -22,9 +24,8 @@
     "random",
     "generator"
   ],
-  "author": "Isaac Sukin (http://www.isaacsukin.com/)",
+  "author": "Dan Oved",
   "license": "MIT",
-  "readmeFilename": "ReadMe.md",
   "devDependencies": {
     "@babel/cli": "^7.10.5",
     "@babel/core": "^7.10.5",
@@ -34,7 +35,10 @@
   "scripts": {
     "build": "babel src --extensions '.ts' --copy-files -d lib"
   },
-  "dependencies": {
-    "three": "^0.124.0"
+  "peerDependencies": {
+    "three": ">=0.126.0"
+  },
+  "directories": {
+    "lib": "lib"
   }
 }
