@@ -35,6 +35,6 @@
     "build": "babel src --extensions '.ts' --copy-files -d lib"
   },
   "dependencies": {
-    "three": "^0.124.0"
+    "three": ">=0.126.0"
   }
 }
